@@ -6,6 +6,7 @@ import openai
 import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from PyPDF2 import PdfReader
 
 # === Setup: credenziali da secrets ===
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -80,6 +81,21 @@ def parse_uploaded_file(uploaded_file):
 
 def parse_excel_file(uploaded_file):
     return parse_uploaded_file(uploaded_file)
+
+from PyPDF2 import PdfReader
+
+def parse_pdf_files(pdf_files):
+    parsed_results = {}
+    for pdf in pdf_files:
+        try:
+            reader = PdfReader(pdf)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() or ""
+            parsed_results[pdf.name] = text.strip()
+        except Exception as e:
+            parsed_results[pdf.name] = f"Errore nel parsing: {e}"
+    return parsed_results
 
 # === 🎯 CAMPAGNA ===
 def start_campaign_flow(parsed_df=None):
