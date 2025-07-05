@@ -62,6 +62,7 @@ elif action == "🚀 Avvia una nuova campagna":
         if uploaded_file:
             try:
                 df = parse_excel_file(uploaded_file)
+                st.session_state["excel_df"] = df
                 st.success(f"✅ {len(df)} contatti caricati correttamente.")
                 st.dataframe(df[["Name", "Company", "Role", "Triggers"]])
             except Exception as e:
@@ -70,53 +71,77 @@ elif action == "🚀 Avvia una nuova campagna":
             st.info("Carica un file Excel per visualizzare i contatti.")
 
     # 2. Caricamento multiplo PDF
-    with st.expander("📄 2. Carica i PDF dei profili LinkedIn (facoltativo)", expanded=True):
+    with st.expander("📄 2. Carica i PDF da usare come input (opzionale)", expanded=True):
         uploaded_pdfs = st.file_uploader("Carica uno o più file PDF", type=["pdf"], accept_multiple_files=True)
 
         if uploaded_pdfs:
-            total_size = sum([f.size for f in uploaded_pdfs]) / (1024 * 1024)  # in MB
+            total_size = sum([f.size for f in uploaded_pdfs]) / (1024 * 1024)  # MB
             if len(uploaded_pdfs) > 10:
-                st.warning("⚠️ Hai caricato più di 10 file. Ti consigliamo di caricarne max 10 alla volta.")
+                st.warning("⚠️ Hai caricato più di 10 PDF. Consigliato: max 10 alla volta.")
             if total_size > 50:
-                st.warning(f"⚠️ Dimensione totale PDF: {total_size:.1f}MB. Potrebbe causare rallentamenti.")
+                st.warning(f"⚠️ Dimensione totale PDF: {total_size:.1f}MB. Potrebbero verificarsi rallentamenti.")
 
-            st.success(f"📄 {len(uploaded_pdfs)} file PDF ricevuti. Non ancora elaborati.")
-            if st.button("💾 Salva i PDF in memoria per usarli dopo"):
-                st.session_state["pdf_memory"] = uploaded_pdfs
-                st.success("PDF memorizzati temporaneamente nella sessione.")
-            if st.session_state.get("pdf_memory"):
-                st.info(f"📌 {len(st.session_state['pdf_memory'])} PDF attualmente in memoria. Pronti all'elaborazione.")
-        else:
-            st.info("Puoi caricare i PDF dei profili scaricati da LinkedIn (opzionale).")
+            st.success(f"📄 {len(uploaded_pdfs)} PDF caricati (non ancora memorizzati).")
 
-    # 3. Azioni della campagna
+            if st.button("📌 Memorizza questi PDF"):
+                if "pdf_memory" not in st.session_state:
+                    st.session_state["pdf_memory"] = []
+                st.session_state["pdf_memory"].extend(uploaded_pdfs)
+                st.success("PDF aggiunti alla memoria temporanea.")
+
+        # Riepilogo PDF memorizzati
+        pdfs_mem = st.session_state.get("pdf_memory", [])
+        if pdfs_mem:
+            st.info(f"📌 Totale PDF memorizzati: {len(pdfs_mem)}")
+            if st.button("🧠 Elabora PDF ora"):
+                st.write("📖 Elaborazione PDF attivata (simulazione)...")
+                # Qui inserirai la tua logica di parsing batch
+                # es. per ora: st.write([f.name for f in pdfs_mem])
+
+    # 3. Azioni della campagna (pulsanti sempre visibili)
     st.markdown("### 🎯 3. Azioni disponibili")
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("🚀 Avvia"):
-            st.success("Campagna avviata (placeholder).")
+            df = st.session_state.get("excel_df")
+            if df is not None:
+                start_campaign_flow(df)
+            else:
+                st.warning("Carica prima un file Excel per avviare la campagna.")
     with col2:
         if st.button("⏸️ Pausa"):
-            st.info("Campagna in pausa (placeholder).")
+            st.info("🛑 Campagna in pausa (simulazione).")
     with col3:
         if st.button("🗑️ Azzera"):
+            st.session_state.pop("excel_df", None)
             st.session_state.pop("pdf_memory", None)
-            st.warning("Campagna azzerata. PDF in memoria rimossi.")
+            st.warning("Dati della campagna azzerati.")
 
-    # 4. Chat assistente AI
+    # 4. Chat con AI assistente
     st.markdown("### 💬 4. Chatta con l’assistente AI")
     user_prompt = st.text_area("Scrivi qui una domanda, incolla un contenuto o chiedi aiuto…")
     if st.button("✉️ Invia alla chat AI"):
         if user_prompt:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": user_prompt}],
-                temperature=0.6,
-            )
-            st.markdown("**Risposta AI:**")
-            st.write(response.choices[0].message.content)
+            prompt_lower = user_prompt.lower()
+            if any(k in prompt_lower for k in ["elabora i pdf", "analizza i pdf", "leggi i file", "estrai contenuti"]):
+                pdfs_mem = st.session_state.get("pdf_memory", [])
+                if not pdfs_mem:
+                    st.warning("⚠️ Nessun PDF memorizzato.")
+                else:
+                    st.write("🧠 Elaborazione AI in corso sui PDF caricati...")
+                    # Inserisci qui il parsing/analisi GPT reale
+                    st.success("✔️ Analisi completata (simulazione).")
+            else:
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": user_prompt}],
+                    temperature=0.6,
+                )
+                st.markdown("**Risposta AI:**")
+                st.write(response.choices[0].message.content)
         else:
             st.warning("Scrivi qualcosa prima di inviare.")
+
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
