@@ -13,7 +13,7 @@ from utils import (
     show_privacy_policy,
     show_screen_zero,
     parse_excel_file,
-    save_to_library
+    save_to_library,
     parse_pdf_files
 )
 from PIL import Image
