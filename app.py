@@ -55,14 +55,59 @@ if action == "🏠 Schermata iniziale":
 
 elif action == "🚀 Avvia una nuova campagna":
     st.subheader("🚀 Avvia una nuova campagna")
-    
-    uploaded_file = st.file_uploader("Carica Excel contatti", type=["xlsx"], help="Limite 200MB per file")
 
-    if uploaded_file:
-        df = parse_excel_file(uploaded_file)
-        start_campaign_flow(df)
-    else:
-        st.warning("Carica un file Excel per iniziare la campagna.")
+    # 1. Caricamento Excel contatti
+    with st.expander("📁 1. Carica il file Excel dei contatti", expanded=True):
+        uploaded_file = st.file_uploader("Seleziona il file .xlsx", type=["xlsx"])
+        if uploaded_file:
+            st.success("✅ File Excel caricato correttamente. In attesa di avvio.")
+            st.session_state["uploaded_excel"] = uploaded_file
+        else:
+            st.info("Carica un file Excel per avviare la campagna.")
+
+    # 2. Caricamento opzionale profili PDF
+    with st.expander("📄 2. (Opzionale) Carica i PDF dei profili LinkedIn"):
+        uploaded_pdfs = st.file_uploader("Carica i PDF dei contatti (massimo 10)", type=["pdf"], accept_multiple_files=True)
+        if uploaded_pdfs:
+            st.session_state["pdf_profiles"] = uploaded_pdfs
+            st.success(f"✅ {len(uploaded_pdfs)} PDF caricati.")
+        else:
+            st.info("Puoi caricare più PDF, uno per ogni contatto.")
+
+    # 3. Gestione campagna
+    with st.expander("🛠️ 3. Azioni sulla campagna"):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("🚀 Avvia campagna"):
+                if "uploaded_excel" in st.session_state:
+                    df = parse_excel_file(st.session_state["uploaded_excel"])
+                    st.session_state["parsed_df"] = df
+                    start_campaign_flow(df)
+                else:
+                    st.warning("⚠️ Nessun file Excel caricato.")
+        with col2:
+            if st.button("🔄 Azzera tutto"):
+                st.session_state.clear()
+                st.success("✅ Sessione azzerata.")
+        with col3:
+            if st.button("⏸️ Pausa"):
+                st.info("⏸️ Campagna in pausa. Puoi riprenderla in seguito.")
+
+    # 4. Chat GPT assistente (multiuso)
+    with st.expander("💬 4. Chatta con l’assistente AI", expanded=False):
+        user_prompt = st.text_area("Scrivi una domanda, incolla un contenuto, o chiedi supporto:", key="chat_prompt_campagna")
+        if st.button("Invia a GPT", key="chat_submit_campagna"):
+            if user_prompt:
+                with st.spinner("💡 Elaborazione in corso..."):
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": user_prompt}],
+                        temperature=0.7,
+                    )
+                    st.markdown("### 🧠 Risposta dell’assistente")
+                    st.write(response.choices[0].message.content)
+            else:
+                st.warning("Inserisci qualcosa prima di inviare.")
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
