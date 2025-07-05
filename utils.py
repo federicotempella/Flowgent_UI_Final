@@ -1,155 +1,218 @@
-
 import streamlit as st
 import pandas as pd
 import base64
-import io
-import openai
 import json
+import openai
+import datetime
 import gspread
-from datetime import datetime
-from google.oauth2 import service_account
+from oauth2client.service_account import ServiceAccountCredentials
 
-# Inizializza Google Sheet
+# === Setup: credenziali da secrets ===
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+assistant_id = st.secrets["ASSISTANT_ID"]
+sheet_id = st.secrets["GOOGLE_SHEET_ID"]
+service_account_info = json.loads(st.secrets["SERVICE_ACCOUNT_JSON"])
+
+# === Setup: Google Sheets ===
 def load_google_sheet():
-    credentials = st.secrets["SERVICE_ACCOUNT_JSON"]
-    service_account_info = json.loads(credentials)
-    creds = service_account.Credentials.from_service_account_info(service_account_info)
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
     client = gspread.authorize(creds)
-    sheet = client.open_by_key(st.secrets["GOOGLE_SHEET_ID"])
-    return sheet
+    return client.open_by_key(sheet_id)
 
-# Caricamento logo
-def load_logo(path="logo.png"):
-    try:
-        with open(path, "rb") as f:
-            encoded = base64.b64encode(f.read()).decode()
-        return f"data:image/png;base64,{encoded}"
-    except Exception as e:
-        st.warning("⚠️ Logo non trovato.")
-        return ""
+# === Branding ===
+def load_logo():
+    logo_path = "logo.png"
+    with open(logo_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode("utf-8")
 
-# Caricamento file Excel
+# === 📁 Upload & Parsing Excel ===
 def load_uploaded_excel(uploaded_file):
-    if uploaded_file is not None:
-        try:
-            df = pd.read_excel(uploaded_file)
-            return df
-        except Exception as e:
-            st.error("Errore nel caricamento Excel.")
-    return None
-
-# Parsing contatti Excel avanzato
-def parse_uploaded_contacts(df):
-    if df is None:
-        return pd.DataFrame()
-    required_cols = ["Nome", "Cognome", "Ruolo", "Azienda", "Email", "LinkedIn", "Manually Found Trigger"]
-    missing_cols = [col for col in required_cols if col not in df.columns]
-    if missing_cols:
-        st.error(f"⚠️ Colonne mancanti: {', '.join(missing_cols)}")
-        return pd.DataFrame()
-    df.fillna("", inplace=True)
-    df["Manually Found Trigger"] = df["Manually Found Trigger"].apply(lambda x: [t.strip() for t in x.split(";")] if x else [])
+    df = pd.read_excel(uploaded_file)
     return df
 
 def parse_uploaded_file(uploaded_file):
     df = load_uploaded_excel(uploaded_file)
-    parsed_df = parse_uploaded_contacts(df)
-    return parsed_df
+    df = df.dropna(how='all')  # rimuove righe vuote
 
-# Simulazione generazione
-def simulate_conversation(contact=None):
-    st.success("✅ Simulazione avviata per il contatto.")
-    st.info("💡 Questa funzione è un placeholder demo. La logica reale verrà inserita al parsing effettivo del contatto.")
+    # Validazione colonne
+    expected_cols = [
+        "Name", "Company", "Role", "LinkedIn", 
+        "Manually Found Trigger - Something you read / inferred", 
+        "Manually Found Trigger - Interesting LinkedIn Post", 
+        "Manually Found Trigger - LinkedIn Signal", 
+        "Manually Found Trigger - Contact in Common Relevant", 
+        "Manually Found Trigger - Company Signal"
+    ]
+    for col in expected_cols:
+        if col not in df.columns:
+            raise ValueError(f"Colonna mancante: {col}")
 
-def generate_post(contact=None):
-    st.success("✅ Post generato!")
-    st.info("📌 Placeholder per generazione contenuto. Integrare modello GPT se necessario.")
+    # Gestione trigger: concatenazione in lista
+    def extract_triggers(row):
+        triggers = []
+        for col in expected_cols[4:]:
+            value = row.get(col)
+            if pd.notna(value):
+                split_values = [v.strip() for v in str(value).split(";") if v.strip()]
+                triggers.extend(split_values)
+        return triggers
 
-def start_campaign_flow():
-    st.info("📤 Placeholder per start sequenza campagna. Collega modulo sezione dedicata.")
+    df["Triggers"] = df.apply(extract_triggers, axis=1)
+    return df
 
+def parse_excel_file(uploaded_file):
+    return parse_uploaded_file(uploaded_file)
+
+# === 🎯 CAMPAGNA ===
+def start_campaign_flow(parsed_df):
+    st.success(f"{len(parsed_df)} contatti caricati correttamente per la campagna.")
+    st.dataframe(parsed_df[["Name", "Company", "Role", "Triggers"]])
+
+# === 🤖 SIMULATORE ===
+def simulate_conversation():
+    st.subheader("🤖 Simulatore GPT")
+    user_input = st.text_area("Scrivi un prompt...")
+    if st.button("Invia"):
+        if user_input:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": user_input}],
+                temperature=0.7,
+            )
+            st.write("**Risposta GPT:**", response.choices[0].message.content)
+        else:
+            st.warning("Inserisci un prompt prima di inviare.")
+
+# === 📬 POST GENERATOR ===
+def generate_post():
+    st.subheader("✍️ Generatore di contenuti")
+    idea = st.text_input("Idea o tema del post:")
+    tone = st.selectbox("Tono", ["Professionale", "Informale", "Provocatorio"])
+    if st.button("Genera post"):
+        if idea:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": f"Genera un post LinkedIn in tono {tone}."},
+                    {"role": "user", "content": idea}
+                ],
+                temperature=0.8,
+            )
+            post = response.choices[0].message.content
+            st.text_area("Post generato", post, height=200)
+            if st.button("💾 Salva in libreria"):
+                save_to_library("Post LinkedIn", post)
+                st.success("Post salvato nella tua libreria.")
+        else:
+            st.warning("Inserisci un'idea per generare il post.")
+
+# === 🔁 AGGIORNAMENTI MODELLO ===
 def check_for_updates():
     sheet = load_google_sheet()
-    updates = sheet.worksheet("Model_Updates").get_all_records()
-    for upd in updates:
-        st.markdown(f"**📌 Update:** {upd['Titolo']} — {upd['Data']}")
-        st.markdown(upd['Descrizione'])
-        if upd.get("Accettato") != "Sì":
-            if st.button(f"✅ Accetta aggiornamento: {upd['Titolo']}", key=upd['Titolo']):
-                row_idx = updates.index(upd) + 2
-                sheet.worksheet("Model_Updates").update_cell(row_idx, 5, "Sì")
+    update_tab = sheet.worksheet("Model_Updates")
+    updates = update_tab.get_all_records()
+    st.subheader("🔄 Aggiornamenti al modello")
+    for update in updates:
+        st.markdown(f"**🆕 {update['Titolo']}** – {update['Descrizione']}")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(f"✅ Accetta {update['Titolo']}"):
+                update_tab.update_cell(update['Riga'], update['Accettato_colonna'], "Sì")
+                st.success(f"{update['Titolo']} accettato.")
+        with col2:
+            if st.button(f"❌ Ignora {update['Titolo']}"):
+                update_tab.update_cell(update['Riga'], update['Accettato_colonna'], "No")
 
-def show_screen_zero():
-    st.title("👋 Benvenuto nella tua piattaforma Flowgent AI")
-    st.write("Seleziona un’azione dal menu a sinistra per iniziare.")
-
-def show_settings():
-    st.header("⚙️ Impostazioni utente")
-    with st.form("settings_form"):
-        role = st.selectbox("Ruolo", ["AE", "SDR", "Manager"])
-        level = st.selectbox("Livello", ["Beginner", "Intermediate", "Advanced"])
-        lang = st.selectbox("Lingua", ["Italiano", "English"])
-        submitted = st.form_submit_button("Salva impostazioni")
-        if submitted:
-            st.session_state["user_settings"] = {"role": role, "level": level, "lang": lang}
-            st.success("✅ Impostazioni aggiornate.")
-
-def show_privacy_policy():
-    st.header("🔐 Data Privacy e Proprietà Intellettuale")
-    st.markdown("""
-    - I tuoi dati sono al sicuro.
-    - Tutto il contenuto generato è di tua proprietà.
-    - Nessun dato viene condiviso senza consenso esplicito.
-    """)
-
-def show_feedback_form():
-    st.header("📝 Lascia un feedback")
-    with st.form("feedback_form"):
-        user = st.text_input("Nome utente")
-        comment = st.text_area("Feedback")
-        submitted = st.form_submit_button("Invia")
-        if submitted:
-            sheet = load_google_sheet()
-            sheet.worksheet("UI_Log").append_row([
-                datetime.now().isoformat(), user, "", "", "", "", "Feedback", comment, "", "", "No"
-            ])
-            st.success("✅ Grazie per il tuo feedback!")
-
-def show_contact_form():
-    st.info("Modulo contatti in fase di sviluppo.")
-
-def show_update_module():
-    check_for_updates()
-
-def show_reports():
-    st.header("📊 Report")
+# === 📅 DAILY TASKS ===
+def show_daily_tasks():
     sheet = load_google_sheet()
-    df_ui = pd.DataFrame(sheet.worksheet("UI_Log").get_all_records())
-    df_main = pd.DataFrame(sheet.worksheet("Main_Log").get_all_records())
-    st.subheader("📋 UI_Log")
-    st.dataframe(df_ui)
-    st.subheader("🧾 Main_Log")
-    st.dataframe(df_main)
-
-def show_library():
-    st.header("📚 La tua libreria")
-    sheet = load_google_sheet()
-    records = sheet.worksheet("library").get_all_records()
-    df = pd.DataFrame(records)
-    if df.empty:
-        st.info("📭 Nessun elemento salvato.")
+    log = sheet.worksheet("UI_Log").get_all_records()
+    st.subheader("📅 Le tue azioni recenti")
+    df = pd.DataFrame(log)
+    if not df.empty:
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+        today = datetime.datetime.now().date()
+        filtered = df[df['Timestamp'].dt.date == today]
+        st.dataframe(filtered)
     else:
-        st.dataframe(df)
+        st.info("Nessuna attività registrata oggi.")
 
-def save_to_library(content, categoria="Generico"):
+# === 📋 FEEDBACK FORM ===
+def show_feedback_form():
+    st.subheader("📝 Lascia un feedback")
+    feedback = st.text_area("Il tuo feedback...")
+    if st.button("Invia feedback"):
+        if feedback:
+            sheet = load_google_sheet()
+            feedback_tab = sheet.worksheet("UI_Log")
+            feedback_tab.append_row([
+                datetime.datetime.now().isoformat(),
+                st.session_state.get("user", "Anonimo"),
+                st.session_state.get("email", ""),
+                st.session_state.get("role", ""),
+                st.session_state.get("level", ""),
+                st.session_state.get("lang", ""),
+                "Feedback",
+                feedback,
+                "", "", ""
+            ])
+            st.success("Feedback inviato!")
+        else:
+            st.warning("Scrivi qualcosa prima di inviare.")
+
+# === 💡 SETTINGS ===
+def show_settings():
+    st.subheader("⚙️ Modifica le tue impostazioni")
+    level = st.selectbox("Livello", ["Beginner", "Intermediate", "Advanced"])
+    lang = st.selectbox("Lingua", ["Italiano", "English"])
+    if st.button("Salva impostazioni"):
+        st.session_state["level"] = level
+        st.session_state["lang"] = lang
+        st.success("Impostazioni aggiornate.")
+
+# === 📚 LIBRERIA ===
+def show_library():
     sheet = load_google_sheet()
-    sheet.worksheet("library").append_row([
-        datetime.now().isoformat(), st.session_state.get("user_name", "anonimo"), categoria, content
+    lib = sheet.worksheet("library").get_all_records()
+    df = pd.DataFrame(lib)
+    st.subheader("📚 La tua libreria")
+    if df.empty:
+        st.info("La libreria è vuota.")
+    else:
+        st.dataframe(df[["Timestamp", "Tipo", "Contenuto"]])
+
+def save_to_library(tipo, contenuto):
+    sheet = load_google_sheet()
+    library_tab = sheet.worksheet("library")
+    library_tab.append_row([
+        datetime.datetime.now().isoformat(),
+        tipo,
+        contenuto,
+        st.session_state.get("user", "Anonimo")
     ])
 
-def show_daily_tasks():
-    st.header("📆 Attività giornaliere")
-    st.markdown("- 📤 Invio sequenze")
-    st.markdown("- 🔁 Follow-up")
-    st.markdown("- 📥 Controlla risposte")
-    st.markdown("- 📈 Rivedi performance")  
+# === 📊 REPORTS ===
+def show_reports():
+    sheet = load_google_sheet()
+    st.subheader("📊 Log attività")
+    for tab_name in ["UI_Log", "Main_Log"]:
+        st.markdown(f"### {tab_name}")
+        tab = sheet.worksheet(tab_name).get_all_records()
+        df = pd.DataFrame(tab)
+        if not df.empty:
+            st.dataframe(df)
+        else:
+            st.info(f"Nessun dato in {tab_name}")
+
+# === 🔒 PRIVACY POLICY ===
+def show_privacy_policy():
+    st.subheader("📄 Data Privacy & Proprietà Intellettuale")
+    with open("guide_placeholder.pdf", "rb") as f:
+        st.download_button("📥 Scarica policy completa", f, file_name="guide_placeholder.pdf")
+
+# === 🏠 SCREEN 0 ===
+def show_screen_zero():
+    st.markdown("### 👋 Benvenuto!")
+    st.markdown("Questa è la schermata iniziale del Sales Bot. Usa la toolbar a destra per iniziare.")
