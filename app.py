@@ -124,34 +124,36 @@ elif action == "🚀 Avvia una nuova campagna":
             st.warning("Dati della campagna azzerati.")
 
     # 4. Chat con AI assistente
-    st.markdown("### 💬 4. Chatta con l’assistente AI")
-    user_prompt = st.text_area("Scrivi qui una domanda, incolla un contenuto o chiedi aiuto…")
-    if st.button("✉️ Invia alla chat AI"):
-        if user_prompt:
-            prompt_lower = user_prompt.lower()
-            if any(k in prompt_lower for k in ["elabora i pdf", "analizza i pdf", "leggi i file", "estrai contenuti"]):
-                pdfs_mem = st.session_state.get("pdf_memory", [])
-                if not pdfs_mem:
-                    st.warning("⚠️ Nessun PDF memorizzato.")
-                else:
-                    st.write("🧠 Elaborazione AI in corso sui PDF caricati...")
-                    parsed_texts = parse_pdf_files(pdfs_mem)
-                    st.session_state["parsed_pdf"] = parsed_texts
-                    for filename, content in parsed_texts.items():
-                        with st.expander(f"📄 {filename}", expanded=False):
-                            st.markdown("**Testo estratto (parziale):**")
-                            st.write(content[:1500] + "..." if len(content) > 1500 else content)
-                    st.success("✔️ Parsing completato.")
+st.markdown("### 💬 4. Chatta con l’assistente AI")
+user_prompt = st.text_area("Scrivi qui una domanda, incolla un contenuto o chiedi aiuto…")
+
+if st.button("✉️ Invia alla chat AI"):
+    if user_prompt:
+        prompt_lower = user_prompt.lower()
+        if any(k in prompt_lower for k in ["elabora i pdf", "analizza i pdf", "leggi i file", "estrai contenuti"]):
+            pdfs_mem = st.session_state.get("pdf_memory", [])
+            if not pdfs_mem:
+                st.warning("⚠️ Nessun PDF memorizzato.")
             else:
-                response = openai.ChatCompletion.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": user_prompt}],
-                    temperature=0.6,
-                )
-                st.markdown("**Risposta AI:**")
-                st.write(response.choices[0].message.content)
+                st.write("🧠 Elaborazione AI in corso sui PDF caricati...")
+                from utils import parse_pdf_files
+                parsed_texts = parse_pdf_files(pdfs_mem)
+                st.session_state["parsed_pdf"] = parsed_texts
+                for filename, content in parsed_texts.items():
+                    with st.expander(f"📄 {filename}", expanded=False):
+                        st.markdown("**Testo estratto (parziale):**")
+                        st.write(content[:1500] + "..." if len(content) > 1500 else content)
+                st.success("✔️ Parsing completato.")
         else:
-            st.warning("Scrivi qualcosa prima di inviare.")
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": user_prompt}],
+                temperature=0.6,
+            )
+            st.markdown("**Risposta AI:**")
+            st.write(response.choices[0].message.content)
+    else:
+        st.warning("Scrivi qualcosa prima di inviare.")
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
