@@ -54,8 +54,16 @@ action = st.sidebar.radio("Navigazione", [
 if action == "🏠 Schermata iniziale":
     show_screen_zero()
 
-elif action == "🚀 Avvia una nuova campagna":
-    start_campaign_flow()
+elif selected_option == "🚀 Avvia una nuova campagna":
+    st.subheader("🚀 Avvia una nuova campagna")
+    
+    uploaded_file = st.file_uploader("Carica Excel contatti", type=["xlsx"], help="Limite 200MB per file")
+
+    if uploaded_file:
+        df = parse_uploaded_contacts(uploaded_file)
+        start_campaign_flow(df)
+    else:
+        start_campaign_flow()
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
