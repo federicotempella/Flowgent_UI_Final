@@ -20,6 +20,20 @@ def load_google_sheet():
     client = gspread.authorize(creds)
     return client.open_by_key(sheet_id)
 
+def save_to_library(tipo, contenuto):
+    try:
+        sheet = load_google_sheet()
+        library_tab = sheet.worksheet("library")
+        library_tab.append_row([
+            datetime.datetime.now().isoformat(),
+            tipo,
+            contenuto,
+            st.session_state.get("user", "Anonimo")
+        ])
+        st.success("✅ Contenuto salvato nella tua libreria.")
+    except Exception as e:
+        st.error(f"Errore nel salvataggio in libreria: {str(e)}")
+
 # === Branding ===
 def load_logo(path="logo.png"):
     try:
