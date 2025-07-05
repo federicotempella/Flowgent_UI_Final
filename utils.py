@@ -21,11 +21,13 @@ def load_google_sheet():
     return client.open_by_key(sheet_id)
 
 # === Branding ===
-def load_logo():
-    logo_path = "logo.png"
-    with open(logo_path, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode("utf-8")
+def load_logo(path="logo.png"):
+    try:
+        with open(path, "rb") as f:
+            return f.read()
+    except FileNotFoundError:
+        st.warning("⚠️ Logo non trovato. Verrà usato un placeholder.")
+        return None
 
 # === 📁 Upload & Parsing Excel ===
 def load_uploaded_excel(uploaded_file):
