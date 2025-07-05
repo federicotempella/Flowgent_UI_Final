@@ -68,9 +68,12 @@ def parse_excel_file(uploaded_file):
     return parse_uploaded_file(uploaded_file)
 
 # === 🎯 CAMPAGNA ===
-def start_campaign_flow(parsed_df):
-    st.success(f"{len(parsed_df)} contatti caricati correttamente per la campagna.")
-    st.dataframe(parsed_df[["Name", "Company", "Role", "Triggers"]])
+def start_campaign_flow(parsed_df=None):
+    if parsed_df is not None:
+        st.success(f"{len(parsed_df)} contatti caricati correttamente per la campagna.")
+        st.dataframe(parsed_df[["Name", "Company", "Role", "Triggers"]])
+    else:
+        st.warning("📂 Nessun file caricato. Carica un file Excel per avviare la campagna.")
 
 # === 🤖 SIMULATORE ===
 def simulate_conversation():
