@@ -12,7 +12,7 @@ from utils import (
     show_settings,
     show_privacy_policy,
     show_screen_zero,
-    parse_uploaded_contacts,
+    parse_excel_file,
     save_to_library
 )
 from PIL import Image
