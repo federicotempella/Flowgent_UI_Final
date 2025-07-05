@@ -94,9 +94,14 @@ elif action == "🚀 Avvia una nuova campagna":
         if pdfs_mem:
             st.info(f"📌 Totale PDF memorizzati: {len(pdfs_mem)}")
             if st.button("🧠 Elabora PDF ora"):
-                st.write("📖 Elaborazione PDF attivata (simulazione)...")
-                # Qui inserirai la tua logica di parsing batch
-                # es. per ora: st.write([f.name for f in pdfs_mem])
+                st.write("📖 Elaborazione in corso...")
+                parsed_texts = parse_pdf_files(pdfs_mem)
+                st.session_state["parsed_pdf"] = parsed_texts
+                for filename, content in parsed_texts.items():
+                    with st.expander(f"📄 {filename}", expanded=False):
+                        st.markdown("**Testo estratto (parziale):**")
+                        st.write(content[:1500] + "..." if len(content) > 1500 else content)
+                st.success("✔️ Parsing dei PDF completato.")
 
     # 3. Azioni della campagna (pulsanti sempre visibili)
     st.markdown("### 🎯 3. Azioni disponibili")
@@ -115,6 +120,7 @@ elif action == "🚀 Avvia una nuova campagna":
         if st.button("🗑️ Azzera"):
             st.session_state.pop("excel_df", None)
             st.session_state.pop("pdf_memory", None)
+            st.session_state.pop("parsed_pdf", None)
             st.warning("Dati della campagna azzerati.")
 
     # 4. Chat con AI assistente
@@ -129,8 +135,13 @@ elif action == "🚀 Avvia una nuova campagna":
                     st.warning("⚠️ Nessun PDF memorizzato.")
                 else:
                     st.write("🧠 Elaborazione AI in corso sui PDF caricati...")
-                    # Inserisci qui il parsing/analisi GPT reale
-                    st.success("✔️ Analisi completata (simulazione).")
+                    parsed_texts = parse_pdf_files(pdfs_mem)
+                    st.session_state["parsed_pdf"] = parsed_texts
+                    for filename, content in parsed_texts.items():
+                        with st.expander(f"📄 {filename}", expanded=False):
+                            st.markdown("**Testo estratto (parziale):**")
+                            st.write(content[:1500] + "..." if len(content) > 1500 else content)
+                    st.success("✔️ Parsing completato.")
             else:
                 response = openai.ChatCompletion.create(
                     model="gpt-4o",
@@ -141,7 +152,6 @@ elif action == "🚀 Avvia una nuova campagna":
                 st.write(response.choices[0].message.content)
         else:
             st.warning("Scrivi qualcosa prima di inviare.")
-
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
