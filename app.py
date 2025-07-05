@@ -1,4 +1,3 @@
-
 import streamlit as st
 from utils import (
     load_logo,
@@ -13,7 +12,7 @@ from utils import (
     show_settings,
     show_privacy_policy,
     show_screen_zero,
-    parse_excel_file,
+    parse_uploaded_contacts,
     save_to_library
 )
 from PIL import Image
@@ -54,7 +53,7 @@ action = st.sidebar.radio("Navigazione", [
 if action == "🏠 Schermata iniziale":
     show_screen_zero()
 
-elif selected_option == "🚀 Avvia una nuova campagna":
+elif action == "🚀 Avvia una nuova campagna":
     st.subheader("🚀 Avvia una nuova campagna")
     
     uploaded_file = st.file_uploader("Carica Excel contatti", type=["xlsx"], help="Limite 200MB per file")
@@ -63,7 +62,7 @@ elif selected_option == "🚀 Avvia una nuova campagna":
         df = parse_uploaded_contacts(uploaded_file)
         start_campaign_flow(df)
     else:
-        start_campaign_flow()
+        st.warning("Carica un file Excel per iniziare la campagna.")
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
