@@ -74,27 +74,8 @@ elif action == "🚀 Avvia una nuova campagna":
         else:
             st.info("Puoi caricare più PDF, uno per ogni contatto.")
 
-    # 3. Gestione campagna
-    with st.expander("🛠️ 3. Azioni sulla campagna"):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("🚀 Avvia campagna"):
-                if "uploaded_excel" in st.session_state:
-                    df = parse_excel_file(st.session_state["uploaded_excel"])
-                    st.session_state["parsed_df"] = df
-                    start_campaign_flow(df)
-                else:
-                    st.warning("⚠️ Nessun file Excel caricato.")
-        with col2:
-            if st.button("🔄 Azzera tutto"):
-                st.session_state.clear()
-                st.success("✅ Sessione azzerata.")
-        with col3:
-            if st.button("⏸️ Pausa"):
-                st.info("⏸️ Campagna in pausa. Puoi riprenderla in seguito.")
-
-    # 4. Chat GPT assistente (multiuso)
-    with st.expander("💬 4. Chatta con l’assistente AI", expanded=False):
+    # 3. Chat GPT assistente (multiuso)
+    with st.expander("💬 3. Chatta con l’assistente AI", expanded=False):
         user_prompt = st.text_area("Scrivi una domanda, incolla un contenuto, o chiedi supporto:", key="chat_prompt_campagna")
         if st.button("Invia a GPT", key="chat_submit_campagna"):
             if user_prompt:
@@ -108,6 +89,27 @@ elif action == "🚀 Avvia una nuova campagna":
                     st.write(response.choices[0].message.content)
             else:
                 st.warning("Inserisci qualcosa prima di inviare.")
+
+    # 4. Pulsanti gestione campagna (sempre visibili)
+    st.markdown("---")
+    st.markdown("### 🛠️ Azioni campagna")
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("🚀 Avvia campagna", use_container_width=True):
+            if "uploaded_excel" in st.session_state:
+                df = parse_excel_file(st.session_state["uploaded_excel"])
+                st.session_state["parsed_df"] = df
+                start_campaign_flow(df)
+            else:
+                st.warning("⚠️ Nessun file Excel caricato.")
+    with col2:
+        if st.button("🔄 Azzera tutto", use_container_width=True):
+            st.session_state.clear()
+            st.success("✅ Sessione azzerata.")
+    with col3:
+        if st.button("⏸️ Pausa", use_container_width=True):
+            st.info("⏸️ Campagna in pausa. Puoi riprenderla in seguito.")
 
 elif action == "🤖 Simula una conversazione":
     simulate_conversation()
