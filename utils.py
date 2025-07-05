@@ -117,21 +117,25 @@ def generate_post():
 def check_for_updates():
     try:
         sheet = load_google_sheet()
-        update_tab = sheet.worksheet("Model_Updates")
-        updates = update_tab.get_all_records()
-        st.subheader("🔄 Aggiornamenti al modello")
-        if not updates:
+        worksheet = sheet.worksheet("Model_Updates")
+        values = worksheet.get_all_values()
+        if len(values) <= 1:
             st.info("Nessun aggiornamento disponibile.")
-        for i, update in enumerate(updates, start=2):  # parte da riga 2
+            return
+        headers = values[0]
+        records = values[1:]
+        st.subheader("🔄 Aggiornamenti al modello")
+        for i, row in enumerate(records, start=2):  # partendo dalla riga 2
+            update = dict(zip(headers, row))
             st.markdown(f"**🆕 {update['Titolo']}** – {update['Descrizione']}")
             col1, col2 = st.columns(2)
             with col1:
                 if st.button(f"✅ Accetta {update['Titolo']}", key=f"accept_{i}"):
-                    update_tab.update_cell(i, update['Accettato_colonna'], "Sì")
+                    worksheet.update_cell(i, headers.index("Accettato_colonna") + 1, "Sì")
                     st.success(f"{update['Titolo']} accettato.")
             with col2:
                 if st.button(f"❌ Ignora {update['Titolo']}", key=f"ignore_{i}"):
-                    update_tab.update_cell(i, update['Accettato_colonna'], "No")
+                    worksheet.update_cell(i, headers.index("Accettato_colonna") + 1, "No")
     except Exception as e:
         st.error(f"Errore nella lettura degli aggiornamenti: {str(e)}")
 
@@ -139,16 +143,19 @@ def check_for_updates():
 def show_daily_tasks():
     try:
         sheet = load_google_sheet()
-        log = sheet.worksheet("UI_Log").get_all_records()
-        df = pd.DataFrame(log)
-        st.subheader("📅 Le tue azioni recenti")
-        if df.empty:
+        worksheet = sheet.worksheet("UI_Log")
+        values = worksheet.get_all_values()
+        if len(values) <= 1:
             st.info("Nessuna attività registrata oggi.")
-        else:
-            df['Timestamp'] = pd.to_datetime(df['Timestamp'], errors='coerce')
-            today = datetime.datetime.now().date()
-            filtered = df[df['Timestamp'].dt.date == today]
-            st.dataframe(filtered)
+            return
+        headers = values[0]
+        records = values[1:]
+        df = pd.DataFrame(records, columns=headers)
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'], errors='coerce')
+        today = datetime.datetime.now().date()
+        filtered = df[df['Timestamp'].dt.date == today]
+        st.subheader("📅 Le tue azioni recenti")
+        st.dataframe(filtered)
     except Exception as e:
         st.error(f"Errore nella lettura delle attività: {str(e)}")
 
@@ -187,27 +194,20 @@ def show_settings():
 
 # === 📚 LIBRERIA ===
 def show_library():
-    sheet = load_google_sheet()
     try:
-        lib = sheet.worksheet("library").get_all_records()
-        df = pd.DataFrame(lib)
-        st.subheader("📚 La tua libreria")
-        if df.empty:
+        sheet = load_google_sheet()
+        worksheet = sheet.worksheet("library")
+        values = worksheet.get_all_values()
+        if len(values) <= 1:
             st.info("La libreria è vuota.")
-        else:
-            st.dataframe(df[["Timestamp", "Tipo", "Contenuto"]])
+            return
+        headers = values[0]
+        records = values[1:]
+        df = pd.DataFrame(records, columns=headers)
+        st.subheader("📚 La tua libreria")
+        st.dataframe(df[["Timestamp", "Tipo", "Contenuto"]])
     except Exception as e:
         st.error(f"Errore nella lettura della libreria: {str(e)}")
-
-def save_to_library(tipo, contenuto):
-    sheet = load_google_sheet()
-    library_tab = sheet.worksheet("library")
-    library_tab.append_row([
-        datetime.datetime.now().isoformat(),
-        tipo,
-        contenuto,
-        st.session_state.get("user", "Anonimo")
-    ])
 
 # === 📊 REPORTS ===
 def show_reports():
@@ -216,12 +216,15 @@ def show_reports():
     for tab_name in ["UI_Log", "Main_Log"]:
         st.markdown(f"### {tab_name}")
         try:
-            tab = sheet.worksheet(tab_name).get_all_records()
-            df = pd.DataFrame(tab)
-            if df.empty:
+            worksheet = sheet.worksheet(tab_name)
+            values = worksheet.get_all_values()
+            if len(values) <= 1:
                 st.info(f"Nessun dato disponibile in {tab_name}.")
-            else:
-                st.dataframe(df)
+                continue
+            headers = values[0]
+            records = values[1:]
+            df = pd.DataFrame(records, columns=headers)
+            st.dataframe(df)
         except Exception as e:
             st.error(f"Errore nella lettura del foglio {tab_name}: {str(e)}")
 
