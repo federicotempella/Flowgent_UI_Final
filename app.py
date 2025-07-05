@@ -59,7 +59,7 @@ elif action == "🚀 Avvia una nuova campagna":
     uploaded_file = st.file_uploader("Carica Excel contatti", type=["xlsx"], help="Limite 200MB per file")
 
     if uploaded_file:
-        df = parse_uploaded_contacts(uploaded_file)
+        df = parse_excel_file(uploaded_file)
         start_campaign_flow(df)
     else:
         st.warning("Carica un file Excel per iniziare la campagna.")
