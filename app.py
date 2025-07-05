@@ -27,7 +27,7 @@ logo = load_logo()
 if logo:
     st.image(logo, width=160)
 else:
-    st.markdown("🟡 <span style='color:orange'>LOGO placeholder</span>", unsafe_allow_html=True)
+    st.markdown("### LOGO")  # Placeholder visivo
 
 st.title("Ciao 👋 cosa vuoi fare oggi?")
 
