@@ -1,0 +1,27 @@
+/* Custom Streamlit UI styling */
+body {
+    font-family: "Segoe UI", sans-serif;
+}
+
+.sidebar .sidebar-content {
+    background-color: #f4fff4;
+}
+
+button {
+    border-radius: 10px;
+    padding: 0.5em 1em;
+}
+
+h1, h2, h3 {
+    color: #228B22;
+}
+
+.logo-placeholder {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 24px;
+    color: #999;
+    border: 2px dashed #ccc;
+    margin-top: 20px;
+}
