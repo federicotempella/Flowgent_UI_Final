@@ -43,12 +43,12 @@ st.sidebar.title("📌 Menu")
 
 # Mappa visiva → valore logico
 options = {
-    "🚀 Avvia una nuova campagna",
-    "🤖 Simula una conversazione",
-    "📝 Crea un post LinkedIn",
-    "🗓️ Cosa devo fare oggi?",
-    "👤 Buyer Persona",
-    "📊 Analisi Competitor"
+    "🚀 Avvia una nuova campagna": "start_campaign",
+    "🤖 Simula una conversazione": "simulate",
+    "📝 Crea un post LinkedIn": "linkedin_post",
+    "🗓️ Cosa devo fare oggi?": "agenda",
+    "👤 Buyer Persona": "persona",
+    "📊 Analisi Competitor": "competitor"
 }
 
 # Mostra solo le etichette visive
