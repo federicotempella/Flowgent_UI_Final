@@ -104,14 +104,28 @@ if action == "persona":
         st.success("✅ Buyer Persona salvata! Ora visibile nella matrice centrale.")
 
     with st.expander("📂 Buyer Persona già salvate"):
-        all_bp = load_all_buyer_personas()
-        for role, data in all_bp.items():
-            st.markdown(f"**🧑‍💼 {role}**")
-            for industry, details in data.get("industries", {}).items():
-                st.markdown(f"- *Industry:* `{industry}`")
-                st.markdown(f"  - Pain: {', '.join(details.get('pain', []))}")
-                st.markdown(f"  - KPI: {', '.join(details.get('kpi', []))}")
-                st.markdown(f"  - Suggerimento: {details.get('suggestion')}")
+    buyer_personas = load_all_buyer_personas()
+
+    # Estrai tutte le industry e i ruoli
+    industries = sorted(set(
+        industry
+        for role_data in buyer_personas.values()
+        for industry in role_data.get("industries", {}).keys()
+    ))
+    roles = sorted(buyer_personas.keys())
+
+    # Dropdown visibili
+    selected_industry = st.selectbox("📂 Scegli il settore", industries)
+    selected_role = st.selectbox("🧑‍💼 Scegli il ruolo", roles)
+
+    # Mostra dati relativi
+    selected_data = buyer_personas.get(selected_role, {}).get("industries", {}).get(selected_industry)
+    if selected_data:
+        st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
+        st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
+        st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
+    else:
+        st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
 
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
