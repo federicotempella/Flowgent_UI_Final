@@ -297,3 +297,56 @@ def analyze_triggers_and_rank(df):
 
     return pd.DataFrame(ranked_data)
 
+# === 🧠 Personalizzazione multivariabile con GPT ===
+def generate_personalized_messages(df):
+    results = []
+
+    for idx, row in df.iterrows():
+        nome = row.get("Name", "")
+        azienda = row.get("Company", "")
+        ruolo = row.get("Role", "")
+        trigger = row.get("Triggers", [])
+        settore = st.session_state.get("industry", "non specificato")
+        livello = st.session_state.get("level", "Intermediate")
+
+        if isinstance(trigger, list):
+            trigger_text = "; ".join(trigger)
+        else:
+            trigger_text = str(trigger)
+
+        prompt = f"""
+Sei un assistente GPT per la scrittura di messaggi B2B.
+Devi generare un messaggio personalizzato di primo contatto per:
+
+- Nome: {nome}
+- Azienda: {azienda}
+- Ruolo: {ruolo}
+- Settore: {settore}
+- Livello utente: {livello}
+- Trigger rilevati: {trigger_text}
+
+Usa tono consultivo se il livello è Advanced o Intermediate.
+Includi hook personalizzato e call to action.
+"""
+
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "Genera solo il testo del messaggio. Max 600 caratteri."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+            )
+            message = response.choices[0].message.content
+        except Exception as e:
+            message = f"❌ Errore GPT: {e}"
+
+        results.append({
+            "Name": nome,
+            "Company": azienda,
+            "Role": ruolo,
+            "Messaggio generato": message
+        })
+
+    return pd.DataFrame(results)
