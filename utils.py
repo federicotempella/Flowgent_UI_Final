@@ -274,7 +274,7 @@ def show_screen_zero():
     st.markdown("Questa è la schermata iniziale del Sales Bot. Usa la toolbar a destra per iniziare.")
 
 # === 📊 Trigger → KPI → Messaggio suggerito ===
-def analyze_triggers_and_rank(df):
+def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_personas=None):
     kpi_mapping = {
         "ERP complesso": {"KPI": "Tempo processo ordine", "Tipo": "Consultivo", "Punteggio": 8},
         "Struttura IT decentrata": {"KPI": "Tempo decisionale", "Tipo": "Provocatorio", "Punteggio": 7},
