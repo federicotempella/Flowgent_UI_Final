@@ -106,22 +106,24 @@ elif action == "🚀 Avvia una nuova campagna":
                         st.write(content[:1500] + "..." if len(content) > 1500 else content)
                 st.success("✔️ Parsing dei PDF completato.")
 
-    # Step 2 – Trigger KPI Ranking
-if st.button("📊 Mostra ranking & matrice KPI"):
+parsed_pdf = st.session_state.get("parsed_pdf", {})
+manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
+buyer_personas = load_persona_matrix()  # Nuova funzione in utils
+
+
+    if st.button("📊 Mostra ranking & matrice KPI"):
     df = st.session_state.get("excel_df")
     if df is not None:
         try:
-            ranked_df = analyze_triggers_and_rank(df)
+            ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
             if not ranked_df.empty:
                 st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
                 st.dataframe(ranked_df)
                 st.success("✔️ Analisi trigger completata.")
             else:
-                st.info("Nessun trigger tra quelli predefiniti trovato per mappatura KPI.")
+                st.info("Nessun trigger tra quelli noti trovato per mappatura KPI.")
         except Exception as e:
             st.error(f"Errore nell'analisi KPI: {e}")
-    else:
-        st.warning("⚠️ Nessun file Excel caricato.")
 
     # Step 3 – Personalizzazione multivariabile GPT
 if st.button("🧠 Genera messaggi personalizzati"):
