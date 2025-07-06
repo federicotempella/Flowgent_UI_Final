@@ -133,7 +133,9 @@ if st.button("🧠 Genera messaggi personalizzati"):
                 st.session_state["personalized_messages"] = output_df
                 st.subheader("📩 Messaggi personalizzati generati")
                 st.dataframe(output_df)
-st.success("✔️ Messaggi generati con successo.")
+            st.success("✔️ Messaggi generati con successo.")
+        except Exception as e:
+            st.error(f"❌ Errore durante la generazione dei messaggi: {e}")
 
 # Opzione: Scarica Excel
 import io
