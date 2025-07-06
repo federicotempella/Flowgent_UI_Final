@@ -113,11 +113,11 @@ if action == "persona":
                 st.markdown(f"  - KPI: {', '.join(details.get('kpi', []))}")
                 st.markdown(f"  - Suggerimento: {details.get('suggestion')}")
 
-st.markdown("---")
-st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
-if st.button("🚀 Avvia una nuova campagna"):
-    st.session_state["action"] = "upload"  # o "start_campaign" se hai quel valore
-    st.experimental_rerun()
+    st.markdown("---")
+    st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
+    if st.button("🚀 Avvia una nuova campagna"):
+        st.session_state["action"] = "upload"  # o "start_campaign" se hai quel valore
+        st.experimental_rerun()
 
 # --- ROUTING ---
 if nav_choice == "🚀 Avvia una nuova campagna":
