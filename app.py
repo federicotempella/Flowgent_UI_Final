@@ -172,7 +172,7 @@ buyer_personas = load_persona_matrix_from_json(industry=industry)
 
 
 if action == "ranking":
-    st.subheader("📊 Mostra ranking & matrice KPI"):
+    st.subheader("📊 Mostra ranking & matrice KPI")
     df = st.session_state.get("excel_df")
     if df is not None:
         try:
