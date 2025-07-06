@@ -47,6 +47,7 @@ action = st.sidebar.radio("Navigazione", [
     "📝 Crea un post LinkedIn",
     "📥 Consulta Report",
     "📚 Apri la tua libreria",
+    "👤 Buyer Persona",
     "🗓️ Cosa devo fare oggi?",
     "💬 Lascia un feedback",
     "🔐 Data privacy & condizioni d’uso",
