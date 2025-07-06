@@ -17,7 +17,7 @@ from utils import (
     parse_pdf_files,
     analyze_triggers_and_rank,
     generate_personalized_messages,
-    load_persona_matrix_from_json()
+    load_persona_matrix_from_json
 )
 from PIL import Image
 
