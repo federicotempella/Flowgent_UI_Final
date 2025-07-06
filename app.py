@@ -53,7 +53,7 @@ selected_label = st.sidebar.radio("Scegli un'azione", list(options.keys()))
 # Internamente usiamo il valore logico
 action = options[selected_label]
 
-if action == "👤 Buyer Persona":
+if action == "persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
 
     from utils import load_all_buyer_personas, save_all_buyer_personas
@@ -169,7 +169,8 @@ industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "C
 buyer_personas = load_persona_matrix_from_json(industry=industry)
 
 
-if st.button("📊 Mostra ranking & matrice KPI"):
+if action == "ranking":
+    st.subheader("📊 Mostra ranking & matrice KPI"):
     df = st.session_state.get("excel_df")
     if df is not None:
         try:
