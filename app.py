@@ -106,10 +106,10 @@ elif action == "🚀 Avvia una nuova campagna":
                         st.write(content[:1500] + "..." if len(content) > 1500 else content)
                 st.success("✔️ Parsing dei PDF completato.")
 
-parsed_pdf = st.session_state.get("parsed_pdf", {})
-manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
-industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
-buyer_personas = load_persona_matrix_from_json(industry=industry)
+    parsed_pdf = st.session_state.get("parsed_pdf", {})
+    manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
+    industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
+    buyer_personas = load_persona_matrix_from_json(industry=industry)
 
 
     if st.button("📊 Mostra ranking & matrice KPI"):
