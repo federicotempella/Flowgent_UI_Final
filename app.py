@@ -16,7 +16,8 @@ from utils import (
     save_to_library,
     parse_pdf_files,
     analyze_triggers_and_rank,
-    generate_personalized_messages
+    generate_personalized_messages,
+    load_persona_matrix_from_json()
 )
 from PIL import Image
 
