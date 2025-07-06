@@ -43,7 +43,10 @@ st.sidebar.title("📌 Menu")
 
 # Mappa visiva → valore logico
 options = {
-    "📊 Mostra ranking & matrice KPI": "ranking",
+    "🚀 Avvia una nuova campagna",
+    "🤖 Simula una conversazione",
+    "📝 Crea un post LinkedIn",
+    "🗓️ Cosa devo fare oggi?",
     "👤 Buyer Persona": "persona",
     "📊 Analisi Competitor": "competitor"
 }
@@ -106,12 +109,8 @@ if st.button("🚀 Avvia una nuova campagna"):
 
 action = st.sidebar.radio("Navigazione", [
     "🏠 Schermata iniziale",
-    "🚀 Avvia una nuova campagna",
-    "🤖 Simula una conversazione",
-    "📝 Crea un post LinkedIn",
     "📥 Consulta Report",
     "📚 Apri la tua libreria",
-    "🗓️ Cosa devo fare oggi?",
     "💬 Lascia un feedback",
     "🔐 Data privacy & condizioni d’uso",
     "🔄 Aggiornamenti"
