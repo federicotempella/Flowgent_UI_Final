@@ -47,6 +47,12 @@ action = st.sidebar.radio("Scegli un'azione", [
     "👤 Buyer Persona","persona",
     "📊 Analisi Competitor", "competitor"  # questo sarà usato in seguito
 ])
+# Mostra la radio con le etichette user-friendly
+selected_label = st.sidebar.radio("Scegli un'azione", list(options.keys()))
+
+# Internamente usiamo il valore logico
+action = options[selected_label]
+
 if action == "👤 Buyer Persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
 
