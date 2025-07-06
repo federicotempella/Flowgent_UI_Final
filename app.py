@@ -117,10 +117,7 @@ nav_choice = st.sidebar.radio("Navigazione", [
 ])
 
 # --- ROUTING ---
-if nav_choice == "🏠 Schermata iniziale":
-    show_screen_zero()
-
-elif nav_choice == "🚀 Avvia una nuova campagna":
+if nav_choice == "🚀 Avvia una nuova campagna":
     st.subheader("🚀 Avvia una nuova campagna")
 
     # 1. Caricamento Excel contatti
