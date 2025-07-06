@@ -108,7 +108,8 @@ elif action == "🚀 Avvia una nuova campagna":
 
 parsed_pdf = st.session_state.get("parsed_pdf", {})
 manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
-buyer_personas = load_persona_matrix()  # Nuova funzione in utils
+industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
+buyer_personas = load_persona_matrix_from_json(industry=industry)
 
 
     if st.button("📊 Mostra ranking & matrice KPI"):
