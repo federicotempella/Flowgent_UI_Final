@@ -8,6 +8,38 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from PyPDF2 import PdfReader
 
+# utils.py
+
+import pandas as pd
+import re
+# altri import se presenti...
+
+# 🔽 Inserisci subito dopo gli import
+def load_persona_matrix():
+    return {
+        "CIO": {
+            "kpi": ["Time-to-market", "IT overhead", "Stability"],
+            "pain": ["Legacy ERP", "Siloed integrations", "Project delays"],
+            "suggestion": "Unify B2B/API/EDI on BIS with managed services"
+        },
+        "Head of Supply Chain": {
+            "kpi": ["Delivery accuracy", "Inventory visibility", "Partner coordination"],
+            "pain": ["Missing ASN", "Manual processes", "Mismatch data"],
+            "suggestion": "Enable real-time ASN/order sync and partner portal"
+        },
+        "Logistics Manager": {
+            "kpi": ["Delivery SLA", "Rework rate", "Shipping cost"],
+            "pain": ["Incorrect labels", "Manual customs", "No tracking"],
+            "suggestion": "Automate shipping docs & integrate ERP-logistics"
+        },
+        "EDI Manager": {
+            "kpi": ["Onboarding speed", "SLA compliance", "Error rate"],
+            "pain": ["Manual mapping", "Outdated tools", "Burnout"],
+            "suggestion": "Use AI mapping and 20K+ template base"
+        }
+        # ...altri ruoli aggiungibili qui
+    }
+
 # === Setup: credenziali da secrets ===
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 assistant_id = st.secrets["ASSISTANT_ID"]
@@ -274,32 +306,45 @@ def show_screen_zero():
     st.markdown("Questa è la schermata iniziale del Sales Bot. Usa la toolbar a destra per iniziare.")
 
 # === 📊 Trigger → KPI → Messaggio suggerito ===
+import pandas as pd
+
 def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_personas=None):
-    kpi_mapping = {
-        "ERP complesso": {"KPI": "Tempo processo ordine", "Tipo": "Consultivo", "Punteggio": 8},
-        "Struttura IT decentrata": {"KPI": "Tempo decisionale", "Tipo": "Provocatorio", "Punteggio": 7},
-        "Team piccolo": {"KPI": "Efficienza operativa", "Tipo": "Narrativo", "Punteggio": 6},
-        "Sistema legacy": {"KPI": "Manutenzione IT", "Tipo": "Provocatorio", "Punteggio": 9},
-        "Usano SAP": {"KPI": "Time-to-market", "Tipo": "Consultivo", "Punteggio": 5},
-    }
+    results = []
 
-    ranked_data = []
+    # Unisci tutte le fonti testo extra in un unico blob
+    pdf_text = "\n".join(parsed_pdf.values()) if parsed_pdf else ""
+    extra_text = (manual_input or "") + "\n" + pdf_text
 
-    for idx, row in df.iterrows():
-        contact_triggers = row.get("Triggers", [])
-        for t in contact_triggers:
-            info = kpi_mapping.get(t)
-            if info:
-                ranked_data.append({
-                    "Name": row["Name"],
-                    "Company": row["Company"],
-                    "Trigger": t,
-                    "KPI Impattato": info["KPI"],
-                    "Tipo Messaggio": info["Tipo"],
-                    "Rilevanza": info["Punteggio"]
-                })
+    for _, row in df.iterrows():
+        name = row.get("Name", "")
+        company = row.get("Company", "")
+        role = row.get("Role", "")
+        trigger = row.get("Triggers", "")
 
-    return pd.DataFrame(ranked_data)
+        # Buyer persona match
+        persona_data = buyer_personas.get(role, {}) if buyer_personas else {}
+        kpi = persona_data.get("kpi", [])
+        pain = persona_data.get("pain", [])
+        suggestion = persona_data.get("suggestion", "")
+
+        # Trigger enrichment da PDF/manual input se manca
+        if not trigger and extra_text:
+            # Semplice euristica: cerca il nome/azienda nei testi e recupera contesto
+            if name in extra_text or company in extra_text:
+                trigger = f"Contenuto trovato in PDF o input AI per {name or company}"
+
+        results.append({
+            "Nome": name,
+            "Azienda": company,
+            "Ruolo": role,
+            "Trigger rilevato": trigger,
+            "Buyer Persona": role,
+            "KPI impattati": ", ".join(kpi),
+            "Pain Point": ", ".join(pain),
+            "Suggerimento": suggestion
+        })
+
+    return pd.DataFrame(results)
 
 # === 🧠 Personalizzazione multivariabile con GPT ===
 def generate_personalized_messages(df):
