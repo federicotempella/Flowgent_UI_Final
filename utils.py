@@ -19,8 +19,9 @@ import json
 import os
 
 def load_persona_matrix_from_json(industry="automotive"):
-    path = "persona_matrix_extended.json"  # Se lo sposti, aggiorna il path
+    path = "data/persona_matrix_extended.json"
     if not os.path.exists(path):
+        st.warning(f"⚠️ File persona_matrix_extended.json non trovato in {path}")
         return {}
 
     with open(path, "r") as f:
