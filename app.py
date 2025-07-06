@@ -14,7 +14,8 @@ from utils import (
     show_screen_zero,
     parse_excel_file,
     save_to_library,
-    parse_pdf_files
+    parse_pdf_files,
+    analyze_triggers_and_rank
 )
 from PIL import Image
 
@@ -70,6 +71,23 @@ elif action == "🚀 Avvia una nuova campagna":
                 st.error(f"❌ Errore durante il parsing del file: {e}")
         else:
             st.info("Carica un file Excel per visualizzare i contatti.")
+
+    # Step 2 – Trigger KPI Ranking
+if st.button("📊 Mostra ranking & matrice KPI"):
+    df = st.session_state.get("excel_df")
+    if df is not None:
+        try:
+            ranked_df = analyze_triggers_and_rank(df)
+            if not ranked_df.empty:
+                st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
+                st.dataframe(ranked_df)
+                st.success("✔️ Analisi trigger completata.")
+            else:
+                st.info("Nessun trigger tra quelli predefiniti trovato per mappatura KPI.")
+        except Exception as e:
+            st.error(f"Errore nell'analisi KPI: {e}")
+    else:
+        st.warning("⚠️ Nessun file Excel caricato.")
 
     # 2. Caricamento multiplo PDF
     with st.expander("📄 2. Carica i PDF da usare come input (opzionale)", expanded=True):
