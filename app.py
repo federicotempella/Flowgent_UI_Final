@@ -17,7 +17,8 @@ from utils import (
     parse_pdf_files,
     analyze_triggers_and_rank,
     generate_personalized_messages,
-    load_persona_matrix_from_json
+    load_persona_matrix_from_json,
+    load_all_buyer_personas
 )
 from PIL import Image
 
@@ -171,7 +172,11 @@ if nav_choice == "🚀 Avvia una nuova campagna":
     parsed_pdf = st.session_state.get("parsed_pdf", {})
     manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
     industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
-    buyer_personas = load_persona_matrix_from_json(industry=industry)
+    buyer_personas = load_all_buyer_personas()
+    roles = list(buyer_personas.keys())
+    selected_role = st.selectbox("🎯 Seleziona un ruolo", roles)
+
+
 
     # Bottone per mostrare ranking KPI
     if st.button("📊 Mostra ranking & matrice KPI"):
