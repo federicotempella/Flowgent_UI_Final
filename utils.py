@@ -394,3 +394,19 @@ Includi hook personalizzato e call to action.
         })
 
     return pd.DataFrame(results)
+
+# utils.py
+
+import json, os
+
+persona_json_path = "data/persona_matrix_extended.json"
+
+def load_all_buyer_personas():
+    if not os.path.exists(persona_json_path):
+        return {}
+    with open(persona_json_path, "r") as f:
+        return json.load(f)
+
+def save_all_buyer_personas(data):
+    with open(persona_json_path, "w") as f:
+        json.dump(data, f, indent=2)
