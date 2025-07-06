@@ -88,7 +88,7 @@ if action == "persona":
     st.markdown("#### 📎 Vuoi caricare risorse extra?")
     uploaded_file = st.file_uploader("Carica PDF o Excel (opzionale)", type=["pdf", "xlsx"])
     st.markdown("### 💬 4. Chatta con l’assistente AI")
-additional_notes = st.text_area("Scrivi qui domande, contenuti o carica note utili")
+    additional_notes = st.text_area("Scrivi qui domande, contenuti o carica note utili")
 
     if st.button("💾 Salva Buyer Persona"):
         bp_data = load_all_buyer_personas()
