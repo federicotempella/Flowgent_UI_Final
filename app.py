@@ -162,21 +162,6 @@ if output_df is not None:
             save_to_library(tipo, msg)
         st.success("✅ Messaggi salvati nella tua libreria.")
 
-    # Chat GPT assistente sempre disponibile
-st.markdown("### 💬 Chatta con l’assistente AI su questi messaggi")
-prompt_step3 = st.text_area("Hai dubbi o vuoi chiedere una modifica sui messaggi generati?")
-if st.button("✉️ Invia domanda GPT (messaggi)"):
-    if prompt_step3:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[{"role": "user", "content": prompt_step3}],
-            temperature=0.6,
-        )
-        st.markdown("**Risposta AI:**")
-        st.write(response.choices[0].message.content)
-    else:
-        st.warning("Scrivi qualcosa prima di inviare.")
-
     # 3. Azioni della campagna (pulsanti sempre visibili)
     st.markdown("### 🎯 3. Azioni disponibili")
     col1, col2, col3 = st.columns(3)
