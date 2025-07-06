@@ -43,7 +43,6 @@ st.sidebar.title("📌 Menu")
 
 # Mappa visiva → valore logico
 options = {
-    "📥 Carica Excel e PDF": "upload",
     "📊 Mostra ranking & matrice KPI": "ranking",
     "👤 Buyer Persona": "persona",
     "📊 Analisi Competitor": "competitor"
