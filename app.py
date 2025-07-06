@@ -57,6 +57,17 @@ selected_label = st.sidebar.radio("Scegli un'azione", list(options.keys()))
 # Ottieni valore logico interno
 action = options[selected_label]
 
+# --- NAVIGAZIONE ---
+st.sidebar.markdown("---")
+nav_choice = st.sidebar.radio("Navigazione", [
+    "🚀 Avvia una nuova campagna",
+    "📥 Consulta Report",
+    "📚 Apri la tua libreria",
+    "💬 Lascia un feedback",
+    "🔐 Data privacy & condizioni d’uso",
+    "🔄 Aggiornamenti"
+])
+
 if action == "persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
 
@@ -157,10 +168,25 @@ if nav_choice == "🚀 Avvia una nuova campagna":
                         st.write(content[:1500] + "..." if len(content) > 1500 else content)
                 st.success("✔️ Parsing dei PDF completato.")
 
-parsed_pdf = st.session_state.get("parsed_pdf", {})
-manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
-industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
-buyer_personas = load_persona_matrix_from_json(industry=industry)
+    parsed_pdf = st.session_state.get("parsed_pdf", {})
+    manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi in chat
+    industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
+    buyer_personas = load_persona_matrix_from_json(industry=industry)
+
+    # Bottone per mostrare ranking KPI
+    if st.button("📊 Mostra ranking & matrice KPI"):
+        df = st.session_state.get("excel_df")
+        if df is not None:
+            try:
+                ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
+                if not ranked_df.empty:
+                    st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
+                    st.dataframe(ranked_df)
+                    st.success("✔️ Analisi trigger completata.")
+                else:
+                    st.info("Nessun trigger tra quelli noti trovato per mappatura KPI.")
+            except Exception as e:
+                st.error(f"Errore nell'analisi KPI: {e}")
 
 # 📊 Mostra analisi solo se Excel già caricato
 if st.session_state.get("excel_df") is not None:
