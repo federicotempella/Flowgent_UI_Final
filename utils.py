@@ -15,30 +15,24 @@ import re
 # altri import se presenti...
 
 # 🔽 Inserisci subito dopo gli import
-def load_persona_matrix():
-    return {
-        "CIO": {
-            "kpi": ["Time-to-market", "IT overhead", "Stability"],
-            "pain": ["Legacy ERP", "Siloed integrations", "Project delays"],
-            "suggestion": "Unify B2B/API/EDI on BIS with managed services"
-        },
-        "Head of Supply Chain": {
-            "kpi": ["Delivery accuracy", "Inventory visibility", "Partner coordination"],
-            "pain": ["Missing ASN", "Manual processes", "Mismatch data"],
-            "suggestion": "Enable real-time ASN/order sync and partner portal"
-        },
-        "Logistics Manager": {
-            "kpi": ["Delivery SLA", "Rework rate", "Shipping cost"],
-            "pain": ["Incorrect labels", "Manual customs", "No tracking"],
-            "suggestion": "Automate shipping docs & integrate ERP-logistics"
-        },
-        "EDI Manager": {
-            "kpi": ["Onboarding speed", "SLA compliance", "Error rate"],
-            "pain": ["Manual mapping", "Outdated tools", "Burnout"],
-            "suggestion": "Use AI mapping and 20K+ template base"
-        }
-        # ...altri ruoli aggiungibili qui
-    }
+import json
+import os
+
+def load_persona_matrix_from_json(industry="automotive"):
+    path = "persona_matrix_extended.json"  # Se lo sposti, aggiorna il path
+    if not os.path.exists(path):
+        return {}
+
+    with open(path, "r") as f:
+        full_matrix = json.load(f)
+
+    # Estrae solo la parte per industry richiesta
+    persona_matrix = {}
+    for role, data in full_matrix.items():
+        if industry in data.get("industries", {}):
+            persona_matrix[role] = data["industries"][industry]
+
+    return persona_matrix
 
 # === Setup: credenziali da secrets ===
 openai.api_key = st.secrets["OPENAI_API_KEY"]
