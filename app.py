@@ -40,17 +40,19 @@ with st.expander("⚙️ Impostazioni utente", expanded=False):
 
 # --- SIDEBAR ---
 st.sidebar.title("📌 Menu")
-# === SIDEBAR — Buyer Persona estesa ===
-action = st.sidebar.radio("Scegli un'azione", [
+
+# Mappa visiva → valore logico
+options = {
     "📥 Carica Excel e PDF": "upload",
     "📊 Mostra ranking & matrice KPI": "ranking",
-    "👤 Buyer Persona","persona",
-    "📊 Analisi Competitor", "competitor"  # questo sarà usato in seguito
-])
-# Mostra la radio con le etichette user-friendly
+    "👤 Buyer Persona": "persona",
+    "📊 Analisi Competitor": "competitor"
+}
+
+# Mostra solo le etichette visive
 selected_label = st.sidebar.radio("Scegli un'azione", list(options.keys()))
 
-# Internamente usiamo il valore logico
+# Ottieni valore logico interno
 action = options[selected_label]
 
 if action == "persona":
