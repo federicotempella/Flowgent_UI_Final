@@ -133,7 +133,7 @@ if st.button("🧠 Genera messaggi personalizzati"):
                 st.session_state["personalized_messages"] = output_df
                 st.subheader("📩 Messaggi personalizzati generati")
                 st.dataframe(output_df)
-            st.success("✔️ Messaggi generati con successo.")
+                st.success("✔️ Messaggi generati con successo.")  # ✅ Ora indentato correttamente
         except Exception as e:
             st.error(f"❌ Errore durante la generazione dei messaggi: {e}")
 
@@ -141,10 +141,12 @@ if st.button("🧠 Genera messaggi personalizzati"):
 import io
 import pandas as pd
 
-buffer = io.BytesIO()
-with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-    output_df.to_excel(writer, index=False, sheet_name="Messaggi")
-    writer.save()
+output_df = st.session_state.get("personalized_messages")
+if output_df is not None:
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        output_df.to_excel(writer, index=False, sheet_name="Messaggi")
+        writer.close()
     st.download_button(
         label="📥 Scarica messaggi in Excel",
         data=buffer.getvalue(),
@@ -152,18 +154,13 @@ with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# Opzione: Salva in libreria
-if st.button("💾 Salva tutti nella libreria"):
-    from utils import save_to_library
-    for _, row in output_df.iterrows():
-        msg = f"{row['Messaggio generato']}"
-        tipo = "Messaggio personalizzato"
-        save_to_library(tipo, msg)
-    st.success("✅ Messaggi salvati nella tua libreria.")
-        except Exception as e:
-            st.error(f"Errore nella generazione dei messaggi: {e}")
-    else:
-        st.warning("⚠️ Nessun Excel caricato.")
+    # Opzione: Salva in libreria
+    if st.button("💾 Salva tutti nella libreria"):
+        for _, row in output_df.iterrows():
+            msg = f"{row['Messaggio generato']}"
+            tipo = "Messaggio personalizzato"
+            save_to_library(tipo, msg)
+        st.success("✅ Messaggi salvati nella tua libreria.")
 
     # Chat GPT assistente sempre disponibile
 st.markdown("### 💬 Chatta con l’assistente AI su questi messaggi")
