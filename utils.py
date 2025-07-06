@@ -213,11 +213,15 @@ def show_feedback_form():
             st.warning("Scrivi qualcosa prima di inviare.")
 
 # === 💡 SETTINGS ===
-def show_settings():
+def show_settings(): 
     st.subheader("⚙️ Modifica le tue impostazioni")
-    level = st.selectbox("Livello", ["Beginner", "Intermediate", "Advanced"])
-    lang = st.selectbox("Lingua", ["Italiano", "English"])
+
+    user = st.text_input("Nome utente (facoltativo)", value=st.session_state.get("user", ""))
+    level = st.selectbox("Livello", ["Beginner", "Intermediate", "Advanced"], index=["Beginner", "Intermediate", "Advanced"].index(st.session_state.get("level", "Beginner")))
+    lang = st.selectbox("Lingua", ["Italiano", "English"], index=["Italiano", "English"].index(st.session_state.get("lang", "Italiano")))
+
     if st.button("Salva impostazioni"):
+        st.session_state["user"] = user if user else "Anonimo"
         st.session_state["level"] = level
         st.session_state["lang"] = lang
         st.success("Impostazioni aggiornate.")
