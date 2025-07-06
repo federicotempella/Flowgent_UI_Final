@@ -104,28 +104,28 @@ if action == "persona":
         st.success("✅ Buyer Persona salvata! Ora visibile nella matrice centrale.")
 
     with st.expander("📂 Buyer Persona già salvate"):
-    buyer_personas = load_all_buyer_personas()
+        buyer_personas = load_all_buyer_personas()
 
-    # Estrai tutte le industry e i ruoli
-    industries = sorted(set(
-        industry
-        for role_data in buyer_personas.values()
-        for industry in role_data.get("industries", {}).keys()
-    ))
-    roles = sorted(buyer_personas.keys())
+        # Estrai tutte le industry e i ruoli
+        industries = sorted(set(
+            industry
+            for role_data in buyer_personas.values()
+            for industry in role_data.get("industries", {}).keys()
+        ))
+        roles = sorted(buyer_personas.keys())
 
-    # Dropdown visibili
-    selected_industry = st.selectbox("📂 Scegli il settore", industries)
-    selected_role = st.selectbox("🧑‍💼 Scegli il ruolo", roles)
+        # Dropdown visibili
+        selected_industry = st.selectbox("📂 Scegli il settore", industries)
+        selected_role = st.selectbox("🧑‍💼 Scegli il ruolo", roles)
 
-    # Mostra dati relativi
-    selected_data = buyer_personas.get(selected_role, {}).get("industries", {}).get(selected_industry)
-    if selected_data:
-        st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
-        st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
-        st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
-    else:
-        st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
+        # Mostra dati relativi
+        selected_data = buyer_personas.get(selected_role, {}).get("industries", {}).get(selected_industry)
+        if selected_data:
+            st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
+            st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
+            st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
+        else:
+            st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
 
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
