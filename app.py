@@ -47,8 +47,8 @@ options = {
     "🤖 Simula una conversazione",
     "📝 Crea un post LinkedIn",
     "🗓️ Cosa devo fare oggi?",
-    "👤 Buyer Persona": "persona",
-    "📊 Analisi Competitor": "competitor"
+    "👤 Buyer Persona",
+    "📊 Analisi Competitor"
 }
 
 # Mostra solo le etichette visive
