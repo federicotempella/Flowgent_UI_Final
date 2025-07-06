@@ -410,3 +410,8 @@ def load_all_buyer_personas():
 def save_all_buyer_personas(data):
     with open(persona_json_path, "w") as f:
         json.dump(data, f, indent=2)
+
+def load_all_buyer_personas():
+    import json
+    with open("data/buyer_personas.json", "r") as f:
+        return json.load(f)
