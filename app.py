@@ -15,7 +15,8 @@ from utils import (
     parse_excel_file,
     save_to_library,
     parse_pdf_files,
-    analyze_triggers_and_rank
+    analyze_triggers_and_rank,
+    generate_personalized_messages
 )
 from PIL import Image
 
@@ -72,23 +73,6 @@ elif action == "🚀 Avvia una nuova campagna":
         else:
             st.info("Carica un file Excel per visualizzare i contatti.")
 
-    # Step 2 – Trigger KPI Ranking
-if st.button("📊 Mostra ranking & matrice KPI"):
-    df = st.session_state.get("excel_df")
-    if df is not None:
-        try:
-            ranked_df = analyze_triggers_and_rank(df)
-            if not ranked_df.empty:
-                st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
-                st.dataframe(ranked_df)
-                st.success("✔️ Analisi trigger completata.")
-            else:
-                st.info("Nessun trigger tra quelli predefiniti trovato per mappatura KPI.")
-        except Exception as e:
-            st.error(f"Errore nell'analisi KPI: {e}")
-    else:
-        st.warning("⚠️ Nessun file Excel caricato.")
-
     # 2. Caricamento multiplo PDF
     with st.expander("📄 2. Carica i PDF da usare come input (opzionale)", expanded=True):
         uploaded_pdfs = st.file_uploader("Carica uno o più file PDF", type=["pdf"], accept_multiple_files=True)
@@ -121,6 +105,39 @@ if st.button("📊 Mostra ranking & matrice KPI"):
                         st.markdown("**Testo estratto (parziale):**")
                         st.write(content[:1500] + "..." if len(content) > 1500 else content)
                 st.success("✔️ Parsing dei PDF completato.")
+
+    # Step 2 – Trigger KPI Ranking
+if st.button("📊 Mostra ranking & matrice KPI"):
+    df = st.session_state.get("excel_df")
+    if df is not None:
+        try:
+            ranked_df = analyze_triggers_and_rank(df)
+            if not ranked_df.empty:
+                st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
+                st.dataframe(ranked_df)
+                st.success("✔️ Analisi trigger completata.")
+            else:
+                st.info("Nessun trigger tra quelli predefiniti trovato per mappatura KPI.")
+        except Exception as e:
+            st.error(f"Errore nell'analisi KPI: {e}")
+    else:
+        st.warning("⚠️ Nessun file Excel caricato.")
+
+    # Step 3 – Personalizzazione multivariabile GPT
+if st.button("🧠 Genera messaggi personalizzati"):
+    df = st.session_state.get("excel_df")
+    if df is not None:
+        try:
+            with st.spinner("🔄 Generazione messaggi in corso..."):
+                output_df = generate_personalized_messages(df)
+                st.session_state["personalized_messages"] = output_df
+                st.subheader("📩 Messaggi personalizzati generati")
+                st.dataframe(output_df)
+                st.success("✔️ Messaggi generati con successo.")
+        except Exception as e:
+            st.error(f"Errore nella generazione dei messaggi: {e}")
+    else:
+        st.warning("⚠️ Nessun Excel caricato.")
 
     # 3. Azioni della campagna (pulsanti sempre visibili)
     st.markdown("### 🎯 3. Azioni disponibili")
