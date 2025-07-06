@@ -105,15 +105,6 @@ st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
 if st.button("🚀 Avvia una nuova campagna"):
     st.session_state["action"] = "upload"  # o "start_campaign" se hai quel valore
     st.experimental_rerun()
-
-
-nav_choice = st.sidebar.radio("Navigazione", [
-    "🏠 Schermata iniziale",
-    "📥 Consulta Report",
-    "📚 Apri la tua libreria",
-    "💬 Lascia un feedback",
-    "🔐 Data privacy & condizioni d’uso",
-    "🔄 Aggiornamenti"
 ])
 
 # --- ROUTING ---
