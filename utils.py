@@ -268,3 +268,32 @@ def show_privacy_policy():
 def show_screen_zero():
     st.markdown("### 👋 Benvenuto!")
     st.markdown("Questa è la schermata iniziale del Sales Bot. Usa la toolbar a destra per iniziare.")
+
+# === 📊 Trigger → KPI → Messaggio suggerito ===
+def analyze_triggers_and_rank(df):
+    kpi_mapping = {
+        "ERP complesso": {"KPI": "Tempo processo ordine", "Tipo": "Consultivo", "Punteggio": 8},
+        "Struttura IT decentrata": {"KPI": "Tempo decisionale", "Tipo": "Provocatorio", "Punteggio": 7},
+        "Team piccolo": {"KPI": "Efficienza operativa", "Tipo": "Narrativo", "Punteggio": 6},
+        "Sistema legacy": {"KPI": "Manutenzione IT", "Tipo": "Provocatorio", "Punteggio": 9},
+        "Usano SAP": {"KPI": "Time-to-market", "Tipo": "Consultivo", "Punteggio": 5},
+    }
+
+    ranked_data = []
+
+    for idx, row in df.iterrows():
+        contact_triggers = row.get("Triggers", [])
+        for t in contact_triggers:
+            info = kpi_mapping.get(t)
+            if info:
+                ranked_data.append({
+                    "Name": row["Name"],
+                    "Company": row["Company"],
+                    "Trigger": t,
+                    "KPI Impattato": info["KPI"],
+                    "Tipo Messaggio": info["Tipo"],
+                    "Rilevanza": info["Punteggio"]
+                })
+
+    return pd.DataFrame(ranked_data)
+
