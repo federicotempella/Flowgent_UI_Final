@@ -399,19 +399,41 @@ Includi hook personalizzato e call to action.
 
 import json, os
 
-persona_json_path = "data/persona_matrix_extended.json"
+base_file = "data/persona_matrix_extended.json"
+custom_file = "data/buyer_personas.json"
 
 def load_all_buyer_personas():
-    if not os.path.exists(persona_json_path):
-        return {}
-    with open(persona_json_path, "r") as f:
-        return json.load(f)
+    # 1. Carica le buyer persona di base (precaricate nel modello v3)
+    if os.path.exists(base_file):
+        with open(base_file, "r") as f:
+            base_data = json.load(f)
+    else:
+        base_data = {}
+
+    # 2. Carica le buyer persona salvate dall'utente
+    if os.path.exists(custom_file):
+        with open(custom_file, "r") as f:
+            custom_data = json.load(f)
+    else:
+        custom_data = {}
+
+    # 3. Merge: custom_data ha priorità
+    merged = base_data.copy()
+
+    for role, role_data in custom_data.items():
+        if role not in merged:
+            merged[role] = role_data
+        else:
+            # Merge delle industry: custom ha priorità
+            merged[role]["industries"] = {
+                **merged[role].get("industries", {}),
+                **role_data.get("industries", {})
+            }
+
+    return merged
+
 
 def save_all_buyer_personas(data):
-    with open(persona_json_path, "w") as f:
+    # Salva solo nel file custom (quelle modificate/aggiunte dall’utente)
+    with open(custom_file, "w") as f:
         json.dump(data, f, indent=2)
-
-def load_all_buyer_personas():
-    import json
-    with open("data/buyer_personas.json", "r") as f:
-        return json.load(f)
