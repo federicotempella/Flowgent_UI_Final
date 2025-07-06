@@ -41,6 +41,12 @@ with st.expander("⚙️ Impostazioni utente", expanded=False):
 # --- SIDEBAR ---
 st.sidebar.title("📌 Menu")
 # === SIDEBAR — Buyer Persona estesa ===
+action = st.sidebar.radio("Scegli un'azione", [
+    "📥 Carica Excel e PDF",
+    "📊 Mostra ranking & matrice KPI",
+    "👤 Buyer Persona",
+    "📊 Analisi Competitor"  # questo sarà usato in seguito
+])
 if action == "👤 Buyer Persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
 
