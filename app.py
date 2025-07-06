@@ -97,6 +97,13 @@ if action == "persona":
                 st.markdown(f"  - KPI: {', '.join(details.get('kpi', []))}")
                 st.markdown(f"  - Suggerimento: {details.get('suggestion')}")
 
+st.markdown("---")
+st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
+if st.button("🚀 Avvia una nuova campagna"):
+    st.session_state["action"] = "upload"  # o "start_campaign" se hai quel valore
+    st.experimental_rerun()
+
+
 action = st.sidebar.radio("Navigazione", [
     "🏠 Schermata iniziale",
     "🚀 Avvia una nuova campagna",
@@ -169,13 +176,16 @@ manual_input = st.session_state.get("ai_notes", "")  # Da popolare dopo messaggi
 industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
 buyer_personas = load_persona_matrix_from_json(industry=industry)
 
-
-if action == "ranking":
-    st.subheader("📊 Mostra ranking & matrice KPI")
-    df = st.session_state.get("excel_df")
-    if df is not None:
+# 📊 Mostra analisi solo se Excel già caricato
+if st.session_state.get("excel_df") is not None:
+    if st.button("📊 Mostra ranking & matrice KPI"):
         try:
-            ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
+            ranked_df = analyze_triggers_and_rank(
+                st.session_state["excel_df"],
+                parsed_pdf,
+                manual_input,
+                buyer_personas
+            )
             if not ranked_df.empty:
                 st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
                 st.dataframe(ranked_df)
