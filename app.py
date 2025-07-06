@@ -40,6 +40,50 @@ with st.expander("⚙️ Impostazioni utente", expanded=False):
 
 # --- SIDEBAR ---
 st.sidebar.title("📌 Menu")
+# === SIDEBAR — Buyer Persona estesa ===
+if action == "👤 Buyer Persona":
+    st.subheader("👤 Crea o modifica una Buyer Persona")
+
+    from utils import load_all_buyer_personas, save_all_buyer_personas
+
+    st.markdown("#### 1️⃣ Cosa fa la tua azienda e qual è la tua value proposition?")
+    value_prop = st.text_area("Value Proposition", placeholder="Es: Offriamo una piattaforma BIS per integrare partner EDI/API senza sviluppi custom...")
+
+    st.markdown("#### 2️⃣ Quali sono i 3 pain point principali che risolvi?")
+    pain_1 = st.text_input("Pain Point 1")
+    pain_2 = st.text_input("Pain Point 2")
+    pain_3 = st.text_input("Pain Point 3")
+
+    st.markdown("#### 3️⃣ Per quali ruoli vuoi creare la matrice?")
+    roles = st.text_input("Ruoli (separati da virgola)", placeholder="Es: CIO, Supply Chain Manager, EDI Manager")
+
+    st.markdown("#### 📎 Vuoi caricare risorse extra?")
+    uploaded_file = st.file_uploader("Carica PDF o Excel (opzionale)", type=["pdf", "xlsx"])
+    additional_notes = st.text_area("Oppure incolla note o esempi qui")
+
+    if st.button("💾 Salva Buyer Persona"):
+        bp_data = load_all_buyer_personas()
+        for role in [r.strip() for r in roles.split(",") if r.strip()]:
+            if role not in bp_data:
+                bp_data[role] = {"industries": {}}
+            bp_data[role]["industries"]["custom"] = {
+                "kpi": ["[Da definire]"],
+                "pain": [pain_1, pain_2, pain_3],
+                "suggestion": value_prop
+            }
+        save_all_buyer_personas(bp_data)
+        st.success("✅ Buyer Persona salvata! Ora visibile nella matrice centrale.")
+
+    with st.expander("📂 Buyer Persona già salvate"):
+        all_bp = load_all_buyer_personas()
+        for role, data in all_bp.items():
+            st.markdown(f"**🧑‍💼 {role}**")
+            for industry, details in data.get("industries", {}).items():
+                st.markdown(f"- *Industry:* `{industry}`")
+                st.markdown(f"  - Pain: {', '.join(details.get('pain', []))}")
+                st.markdown(f"  - KPI: {', '.join(details.get('kpi', []))}")
+                st.markdown(f"  - Suggerimento: {details.get('suggestion')}")
+
 action = st.sidebar.radio("Navigazione", [
     "🏠 Schermata iniziale",
     "🚀 Avvia una nuova campagna",
@@ -47,7 +91,6 @@ action = st.sidebar.radio("Navigazione", [
     "📝 Crea un post LinkedIn",
     "📥 Consulta Report",
     "📚 Apri la tua libreria",
-    "👤 Buyer Persona",
     "🗓️ Cosa devo fare oggi?",
     "💬 Lascia un feedback",
     "🔐 Data privacy & condizioni d’uso",
