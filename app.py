@@ -107,7 +107,7 @@ if st.button("🚀 Avvia una nuova campagna"):
     st.experimental_rerun()
 
 
-action = st.sidebar.radio("Navigazione", [
+nav_choice = st.sidebar.radio("Navigazione", [
     "🏠 Schermata iniziale",
     "📥 Consulta Report",
     "📚 Apri la tua libreria",
@@ -117,10 +117,10 @@ action = st.sidebar.radio("Navigazione", [
 ])
 
 # --- ROUTING ---
-if action == "🏠 Schermata iniziale":
+if nav_choice == "🏠 Schermata iniziale":
     show_screen_zero()
 
-elif action == "🚀 Avvia una nuova campagna":
+elif nav_choice == "🚀 Avvia una nuova campagna":
     st.subheader("🚀 Avvia una nuova campagna")
 
     # 1. Caricamento Excel contatti
