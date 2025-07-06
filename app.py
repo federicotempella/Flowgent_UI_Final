@@ -133,7 +133,31 @@ if st.button("🧠 Genera messaggi personalizzati"):
                 st.session_state["personalized_messages"] = output_df
                 st.subheader("📩 Messaggi personalizzati generati")
                 st.dataframe(output_df)
-                st.success("✔️ Messaggi generati con successo.")
+st.success("✔️ Messaggi generati con successo.")
+
+# Opzione: Scarica Excel
+import io
+import pandas as pd
+
+buffer = io.BytesIO()
+with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+    output_df.to_excel(writer, index=False, sheet_name="Messaggi")
+    writer.save()
+    st.download_button(
+        label="📥 Scarica messaggi in Excel",
+        data=buffer.getvalue(),
+        file_name="messaggi_personalizzati.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+# Opzione: Salva in libreria
+if st.button("💾 Salva tutti nella libreria"):
+    from utils import save_to_library
+    for _, row in output_df.iterrows():
+        msg = f"{row['Messaggio generato']}"
+        tipo = "Messaggio personalizzato"
+        save_to_library(tipo, msg)
+    st.success("✅ Messaggi salvati nella tua libreria.")
         except Exception as e:
             st.error(f"Errore nella generazione dei messaggi: {e}")
     else:
