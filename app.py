@@ -59,15 +59,18 @@ selected_label = st.sidebar.radio("Scegli un'azione", list(options.keys()))
 action = options[selected_label]
 
 # --- NAVIGAZIONE ---
-st.sidebar.markdown("---")
-nav_choice = st.sidebar.radio("Navigazione", [
-    "🚀 Avvia una nuova campagna",
-    "📥 Consulta Report",
-    "📚 Apri la tua libreria",
-    "💬 Lascia un feedback",
-    "🔐 Data privacy & condizioni d’uso",
-    "🔄 Aggiornamenti"
-])
+nav_choice = st.sidebar.radio(
+    "Navigazione", 
+    [
+        "🚀 Avvia una nuova campagna",
+        "📥 Consulta Report",
+        "📚 Apri la tua libreria",
+        "💬 Lascia un feedback",
+        "🔐 Data privacy & condizioni d’uso",
+        "🔄 Aggiornamenti"
+    ],
+    key="nav_choice"
+)
 
 if action == "persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
@@ -130,7 +133,7 @@ if action == "persona":
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
     if st.button("🚀 Avvia una nuova campagna"):
-        st.session_state["action"] = "start_campaign"  
+        st.session_state["nav_choice"] = "🚀 Avvia una nuova campagna"
         st.experimental_rerun()
 
 # --- ROUTING ---
