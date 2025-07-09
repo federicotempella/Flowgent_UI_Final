@@ -116,11 +116,9 @@ if action == "persona":
         else:
             st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
 
-    st.markdown("---")
-    st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
-    if st.button("🚀 Avvia una nuova campagna"):
-        st.session_state["selected_label"] = "🚀 Avvia una nuova campagna"
-        st.experimental_rerun()
+    st.markdown("Vuoi generare messaggi usando questa Buyer Persona?")
+    if st.button("➡️ Vai alla sezione ‘Avvia una nuova campagna’"):
+        st.switch_page("Flowgent AI")  # solo se usi multipagina
 
 # --- ROUTING ---
 if action == "start_campaign":
