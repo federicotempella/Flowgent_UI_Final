@@ -130,7 +130,7 @@ if action == "persona":
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
     if st.button("🚀 Avvia una nuova campagna"):
-        st.session_state["action"] = "upload"  # o "start_campaign" se hai quel valore
+        st.session_state["action"] = "start_campaign"  
         st.experimental_rerun()
 
 # --- ROUTING ---
