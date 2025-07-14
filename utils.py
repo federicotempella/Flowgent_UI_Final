@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 import json
+import re
 import openai
 import datetime
 import gspread
@@ -302,41 +303,87 @@ def show_screen_zero():
 
 # === 📊 Trigger → KPI → Messaggio suggerito ===
 import pandas as pd
+import re
+import openai
 
 def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_personas=None):
+    if buyer_personas is None:
+        buyer_personas = {}
+
+    def extract_known_triggers(text):
+        triggers = []
+        for role_data in buyer_personas.values():
+            for industry_data in role_data.get("industries", {}).values():
+                for p in industry_data.get("pain", []):
+                    if p and re.search(re.escape(p), text, re.IGNORECASE):
+                        triggers.append(p)
+        return list(set(triggers))
+
+    # Unisci Excel + PDF + GPT notes in un solo corpus
+    combined_texts = []
+    if parsed_pdf:
+        for content in parsed_pdf.values():
+            combined_texts.append(content)
+    if manual_input:
+        combined_texts.append(manual_input)
+
+    full_context = " ".join(combined_texts).lower()
+
     results = []
 
-    # Unisci tutte le fonti testo extra in un unico blob
-    pdf_text = "\n".join(parsed_pdf.values()) if parsed_pdf else ""
-    extra_text = (manual_input or "") + "\n" + pdf_text
-
     for _, row in df.iterrows():
-        name = row.get("Name", "")
-        company = row.get("Company", "")
-        role = row.get("Role", "")
-        trigger = row.get("Triggers", "")
+        name = row.get("Name", "Sconosciuto")
+        company = row.get("Company", "N/A")
+        role = row.get("Role", "N/A")
+        trigger_cell = row.get("Triggers", "")
+        found_triggers = []
 
-        # Buyer persona match
-        persona_data = buyer_personas.get(role, {}) if buyer_personas else {}
-        kpi = persona_data.get("kpi", [])
-        pain = persona_data.get("pain", [])
-        suggestion = persona_data.get("suggestion", "")
+        # Analisi Excel triggers
+        for t in re.split(r",|;", str(trigger_cell)):
+            t_clean = t.strip().lower()
+            if t_clean:
+                found_triggers.append(t_clean)
 
-        # Trigger enrichment da PDF/manual input se manca
-        if not trigger and extra_text:
-            # Semplice euristica: cerca il nome/azienda nei testi e recupera contesto
-            if name in extra_text or company in extra_text:
-                trigger = f"Contenuto trovato in PDF o input AI per {name or company}"
+        # Arricchimento: aggiungi anche i trigger trovati in PDF/AI notes
+        extra_triggers = extract_known_triggers(full_context)
+        all_triggers = list(set(found_triggers + extra_triggers))
 
+        # Calcolo score
+        score = len(all_triggers)
+        framework = "TIPPS (generico)"
+        if score >= 4:
+            framework = "TIPPS + COI"
+        elif score == 3:
+            framework = "NEAT (Harris)"
+        elif score == 2:
+            framework = "TIPPS"
+        elif score == 1:
+            framework = "Poke the Bear"
+
+        # Recupera KPI e suggestion da buyer_personas
+        kpi_list = []
+        suggestion = ""
+        for role_key, data in buyer_personas.items():
+            if role_key.lower() == role.lower():
+                for industry_data in data.get("industries", {}).values():
+                    kpi_list += industry_data.get("kpi", [])
+                    if not suggestion:
+                        suggestion = industry_data.get("suggestion", "")
+
+        # Pulisce e rimuove duplicati
+        kpi_list = list(set(kpi_list))
+        kpi_str = ", ".join(kpi_list)
+
+        # Costruzione finale
         results.append({
-            "Nome": name,
-            "Azienda": company,
-            "Ruolo": role,
-            "Trigger rilevato": trigger,
-            "Buyer Persona": role,
-            "KPI impattati": ", ".join(kpi),
-            "Pain Point": ", ".join(pain),
-            "Suggerimento": suggestion
+            "Name": name,
+            "Company": company,
+            "Role": role,
+            "Trigger combinato": ", ".join(all_triggers),
+            "Score": score,
+            "KPI consigliati": kpi_str,
+            "Framework suggerito": framework,
+            "Suggerimento di messaggio": suggestion
         })
 
     return pd.DataFrame(results)
