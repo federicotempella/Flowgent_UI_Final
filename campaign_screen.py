@@ -58,7 +58,28 @@ industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "C
 buyer_personas = load_all_buyer_personas()
 roles = list(buyer_personas.keys())
 selected_role = st.selectbox("🎯 Seleziona un ruolo", roles)
-manual_input = st.text_area("Note extra da usare come prompt (facoltative)", value="")
+st.markdown("### 💬 Chatta con l’AI per arricchire il contesto (facoltativo ma potente)")
+user_prompt = st.text_area("Scrivi qui una domanda, carica contenuti o chiedi aiuto...", key="campaign_chat")
+
+if st.button("✉️ Invia alla chat AI"):
+    if user_prompt:
+        with st.spinner("💬 Elaborazione in corso…"):
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.6,
+            )
+            ai_notes = response.choices[0].message.content
+            st.markdown("**🧠 Risposta AI:**")
+            st.write(ai_notes)
+            st.session_state["ai_notes"] = ai_notes
+    else:
+        st.warning("Scrivi qualcosa prima di inviare.")
+
+# Recupera anche le note AI (manual_input) dalla sessione
+manual_input = st.session_state.get("ai_notes", "")
 
 # Ranking & KPI
 if st.button("📊 Mostra ranking & matrice KPI"):
