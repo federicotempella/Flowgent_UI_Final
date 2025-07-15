@@ -50,7 +50,7 @@ with st.expander("📄 2. Carica i PDF da usare come input (opzionale)", expande
 # Parsing PDF
 pdfs_mem = st.session_state.get("pdf_memory", [])
 parsed_pdf = st.session_state.get("parsed_pdf", {})
-if pdfs_mem and st.button("🧠 Elabora PDF ora"):
+if pdfs_mem and st.button("🧐 Elabora PDF ora"):
     parsed_pdf = parse_pdf_files(pdfs_mem)
     st.session_state["parsed_pdf"] = parsed_pdf
     for filename, content in parsed_pdf.items():
@@ -62,7 +62,7 @@ if pdfs_mem and st.button("🧠 Elabora PDF ora"):
 industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
 buyer_personas = load_all_buyer_personas()
 roles = list(buyer_personas.keys())
-selected_role = st.selectbox("🎯 Seleziona un ruolo", roles)
+selected_role = st.selectbox("🌟 Seleziona un ruolo", roles)
 st.markdown("### 💬 Chatta con l’AI per arricchire il contesto (facoltativo ma potente)")
 user_prompt = st.text_area("Scrivi qui una domanda, carica contenuti o chiedi aiuto...", key="campaign_chat")
 
@@ -83,7 +83,6 @@ if st.button("✉️ Invia alla chat AI"):
     else:
         st.warning("Scrivi qualcosa prima di inviare.")
 
-# Recupera anche le note AI (manual_input) dalla sessione
 manual_input = st.session_state.get("ai_notes", "")
 
 # Ranking & KPI
@@ -101,7 +100,7 @@ if st.button("📊 Mostra ranking & matrice KPI"):
     else:
         st.warning("Carica prima un file Excel.")
 
-# --- Step: Genera messaggi personalizzati ---
+# Step 3: Messaggi personalizzati
 with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
     if st.button("🧠 Genera messaggi personalizzati"):
         df = st.session_state.get("ranked_df")
@@ -112,7 +111,6 @@ with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
                 st.session_state["personalized_messages"] = output_df
                 st.success("✔️ Messaggi generati con successo!")
 
-# --- Step: Visualizza e modifica messaggi ---
 output_df = st.session_state.get("personalized_messages")
 if output_df is not None:
     st.subheader("📩 Messaggi personalizzati")
@@ -121,77 +119,65 @@ if output_df is not None:
         new_msg = st.text_area(f"✏️ Modifica messaggio", value=row['Messaggio generato'], key=f"msg_edit_{i}")
         output_df.at[i, "Messaggio generato"] = new_msg
 
-    # Scarica Excel aggiornato
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
         output_df.to_excel(writer, index=False, sheet_name="Messaggi")
     st.download_button("📥 Scarica messaggi", data=buffer.getvalue(), file_name="messaggi_personalizzati.xlsx")
 
-    # Salva in libreria
     if st.button("💾 Salva tutti in libreria"):
         for _, row in output_df.iterrows():
             save_to_library("Messaggio personalizzato", row["Messaggio generato"])
         st.success("📚 Messaggi salvati nella libreria!")
 
-# --- Step: Sequenza multicanale completa ---
-st.markdown("## 🧩 4. Sequenza multicanale completa")
+# Step 4: Sequenza multicanale
+with st.expander("🧩 4. Sequenza multicanale completa", expanded=False):
+    df = st.session_state.get("personalized_messages")
+    if df is not None and not df.empty:
+        role_type = st.selectbox("👤 Tipo di ruolo", ["AE", "SDR"])
+        include_inmail = st.checkbox("✉️ Includi InMail?", value=False)
+        sequence_length = st.selectbox("🔢 Versione sequenza SDR", ["Standard (8 step)", "Lunga (11 step)"], index=0 if role_type == "AE" else 1)
 
-df = st.session_state.get("personalized_messages")
-if df is not None and not df.empty:
-    role_type = st.selectbox("👤 Tipo di ruolo", ["AE", "SDR"])
-    include_inmail = st.checkbox("✉️ Includi InMail?", value=False)
-    sequence_length = st.selectbox("🔢 Versione sequenza SDR", ["Standard (8 step)", "Lunga (11 step)"], index=0 if role_type == "AE" else 1)
+        if st.button("🎯 Genera sequenza multicanale"):
+            with st.spinner("🧠 Generazione sequenza in corso..."):
+                sequence_df = generate_multichannel_sequence(
+                    df,
+                    role_type=role_type,
+                    include_inmail=include_inmail,
+                    sequence_type="long" if sequence_length == "Lunga (11 step)" else "standard"
+                )
+                st.session_state["multichannel_sequence"] = sequence_df
+                st.success("✅ Sequenza multicanale generata!")
 
-with st.expander("🎯 Genera sequenza multicanale", expanded=False):
-    if st.button("🎯 Genera sequenza multicanale"):
-        with st.spinner("🧠 Generazione sequenza in corso..."):
-            sequence_df = generate_multichannel_sequence(
-                df,
-                role_type=role_type,
-                include_inmail=include_inmail,
-                sequence_type="long" if sequence_length == "Lunga (11 step)" else "standard"
-            )
-            st.session_state["multichannel_sequence"] = sequence_df
-            st.success("✅ Sequenza multicanale generata!")
-
-# Toggle per mostrare o nascondere il grafico
-show_chart = st.checkbox("📊 Mostra il calendario visivo della sequenza", value=True)    
-
-# --- Visualizzazione e modifica sequenza ---
+# Visualizzazione e opzioni su sequenza
 sequence_df = st.session_state.get("multichannel_sequence")
 if sequence_df is not None and not sequence_df.empty:
     st.subheader("📬 Sequenza multicanale generata")
-
     for i, row in sequence_df.iterrows():
         st.markdown(f"#### 🔹 Giorno {row['Giorno']} – {row['Tipo Azione']}")
         st.markdown(f"**Target:** {row['Nome']} ({row['Ruolo']} – {row['Azienda']})")
         new_msg = st.text_area("✏️ Modifica messaggio", value=row["Messaggio"], key=f"seq_msg_{i}")
         sequence_df.at[i, "Messaggio"] = new_msg
 
-    import matplotlib.pyplot as plt
+    show_chart = st.checkbox("📊 Mostra il calendario visivo della sequenza", value=True)
+    if show_chart:
+        st.markdown("### 🗓️ Calendario visuale (distribuzione per giorno)")
+        action_filter = st.multiselect("Filtra per tipo azione", options=sequence_df["Tipo Azione"].unique(), default=sequence_df["Tipo Azione"].unique())
+        target_filter = st.multiselect("Filtra per ruolo target", options=sequence_df["Ruolo"].unique(), default=sequence_df["Ruolo"].unique())
 
-   if show_chart:
-    st.markdown("### 🗓️ Calendario visuale (distribuzione per giorno)")
+        filtered_df = sequence_df[
+            (sequence_df["Tipo Azione"].isin(action_filter)) &
+            (sequence_df["Ruolo"].isin(target_filter))
+        ]
 
-    action_filter = st.multiselect("Filtra per tipo azione", options=sequence_df["Tipo Azione"].unique(), default=sequence_df["Tipo Azione"].unique())
-    target_filter = st.multiselect("Filtra per ruolo target", options=sequence_df["Ruolo"].unique(), default=sequence_df["Ruolo"].unique())
+        day_counts = filtered_df["Giorno"].value_counts().sort_index()
+        fig, ax = plt.subplots(figsize=(8, 3))
+        ax.bar(day_counts.index, day_counts.values)
+        ax.set_xlabel("Giorno")
+        ax.set_ylabel("Numero azioni")
+        ax.set_title("Distribuzione delle azioni nella sequenza")
+        ax.grid(axis="y")
+        st.pyplot(fig)
 
-    filtered_df = sequence_df[
-        (sequence_df["Tipo Azione"].isin(action_filter)) &
-        (sequence_df["Ruolo"].isin(target_filter))
-    ]
-
-    day_counts = filtered_df["Giorno"].value_counts().sort_index()
-    fig, ax = plt.subplots(figsize=(8, 3))
-    ax.bar(day_counts.index, day_counts.values)
-    ax.set_xlabel("Giorno")
-    ax.set_ylabel("Numero azioni")
-    ax.set_title("Distribuzione delle azioni nella sequenza")
-    ax.grid(axis="y")
-    st.pyplot(fig)
-
-
-    # 🔁 Pulsante rigenerazione con altro framework
     st.markdown("### 🔁 Vuoi provare un altro framework?")
     new_framework = st.selectbox("📐 Scegli framework alternativo", ["TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
     if st.button("♻️ Rigenera con framework alternativo"):
@@ -206,24 +192,16 @@ if sequence_df is not None and not sequence_df.empty:
             st.session_state["multichannel_sequence"] = alt_seq
             st.rerun()
 
-    # 💾 Salvataggio in libreria
     if st.button("📚 Salva tutta la sequenza in libreria"):
         for _, row in sequence_df.iterrows():
             save_to_library("Sequenza multicanale", row["Messaggio"])
         st.success("✅ Sequenza salvata nella libreria!")
 
-   if sequence_df is not None and not sequence_df.empty:
-    # Scarica CSV
+    # Download CSV e Word
     csv_buffer = io.StringIO()
     sequence_df.to_csv(csv_buffer, index=False)
-    st.download_button(
-        "📥 Scarica CSV sequenza",
-        data=csv_buffer.getvalue(),
-        file_name="sequenza_multicanale.csv",
-        mime="text/csv"
-    )
+    st.download_button("📥 Scarica CSV della sequenza", data=csv_buffer.getvalue(), file_name="sequenza_multicanale.csv", mime="text/csv")
 
-    # Scarica in Word
     doc = Document()
     doc.add_heading("Sequenza Multicanale", level=1)
     for _, row in sequence_df.iterrows():
@@ -233,28 +211,26 @@ if sequence_df is not None and not sequence_df.empty:
     word_buffer = BytesIO()
     doc.save(word_buffer)
     word_buffer.seek(0)
+    st.download_button("📥 Scarica Word con messaggi", data=word_buffer, file_name="sequenza_multicanale.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-    st.download_button(
-        "📥 Scarica in Word",
-        data=word_buffer,
-        file_name="sequenza_multicanale.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
+# Step 5: Affina con AI
+with st.expander("🧠 5. Affina la sequenza con l’assistente AI", expanded=False):
+    st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
+    user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_seq_prompt")
 
-# --- Step-critical GPT chat ---
-st.markdown("## 🧠 5. Affina la sequenza con l’assistente AI")
-st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
-user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_seq_prompt")
+    if st.button("✉️ Invia alla chat AI", key="send_chat_seq_prompt"):
+        if user_prompt:
+            with st.spinner("💬 Risposta AI in corso..."):
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": user_prompt}],
+                    temperature=0.6,
+                )
+                st.markdown("**Risposta AI:**")
+                st.write(response.choices[0].message.content)
+        else:
+            st.warning("Scrivi qualcosa prima di inviare.")
 
-if st.button("✉️ Invia alla chat AI", key="send_chat_seq_prompt"):
-    if user_prompt:
-        with st.spinner("💬 Risposta AI in corso..."):
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": user_prompt}],
-                temperature=0.6,
-            )
-            st.markdown("**Risposta AI:**")
             st.write(response.choices[0].message.content)
     else:
         st.warning("Scrivi qualcosa prima di inviare.")
