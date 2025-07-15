@@ -389,58 +389,55 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
     return pd.DataFrame(results)
 
 # === 🧠 Personalizzazione multivariabile con GPT ===
-def generate_personalized_messages(df):
-    results = []
+import openai
 
-    for idx, row in df.iterrows():
-        nome = row.get("Name", "")
-        azienda = row.get("Company", "")
-        ruolo = row.get("Role", "")
-        trigger = row.get("Triggers", [])
-        settore = st.session_state.get("industry", "non specificato")
-        livello = st.session_state.get("level", "Intermediate")
+def generate_personalized_messages(ranked_df, framework_override=None):
+    messages = []
 
-        if isinstance(trigger, list):
-            trigger_text = "; ".join(trigger)
-        else:
-            trigger_text = str(trigger)
+    for _, row in ranked_df.iterrows():
+        nome = row.get("Nome", "")
+        azienda = row.get("Azienda", "")
+        ruolo = row.get("Ruolo", "")
+        trigger = row.get("Trigger rilevato", "")
+        kpi = row.get("KPI impattati", "")
+        pain = row.get("Pain Point", "")
+        framework = row.get("Framework", "")
 
-        prompt = f"""
-Sei un assistente GPT per la scrittura di messaggi B2B.
-Devi generare un messaggio personalizzato di primo contatto per:
+        # Override framework se l'utente lo ha scelto
+        if framework_override and framework_override != "Auto (da score)":
+            framework = framework_override
 
+        # Componi prompt per GPT
+        prompt = f"""Scrivi un messaggio di sales outbound per LinkedIn o email basato su questo contesto:
 - Nome: {nome}
 - Azienda: {azienda}
 - Ruolo: {ruolo}
-- Settore: {settore}
-- Livello utente: {livello}
-- Trigger rilevati: {trigger_text}
+- Trigger: {trigger}
+- KPI: {kpi}
+- Pain: {pain}
+- Framework da usare: {framework}
 
-Usa tono consultivo se il livello è Advanced o Intermediate.
-Includi hook personalizzato e call to action.
+Lo stile deve essere sintetico, rilevante e con un chiaro payoff. Evita frasi generiche. Chiusura con call-to-action soft.
 """
 
         try:
-            response = openai.ChatCompletion.create(
+            completion = openai.ChatCompletion.create(
                 model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "Genera solo il testo del messaggio. Max 600 caratteri."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.6,
             )
-            message = response.choices[0].message.content
+            message = completion.choices[0].message.content.strip()
         except Exception as e:
-            message = f"❌ Errore GPT: {e}"
+            message = f"Errore GPT: {e}"
 
-        results.append({
-            "Name": nome,
-            "Company": azienda,
-            "Role": ruolo,
+        messages.append({
+            "Nome": nome,
+            "Azienda": azienda,
+            "Ruolo": ruolo,
             "Messaggio generato": message
         })
 
-    return pd.DataFrame(results)
+    return pd.DataFrame(messages)
 
 # utils.py
 
