@@ -25,6 +25,9 @@ from utils import (
 from PIL import Image
 import pandas as pd
 import io
+import matplotlib.pyplot as plt
+from io import BytesIO
+from docx import Document
 
 # --- CONFIG ---
 st.set_page_config(page_title="Flowgent AI", layout="wide")
