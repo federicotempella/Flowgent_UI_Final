@@ -6,6 +6,7 @@ import re
 import openai
 import datetime
 import gspread
+import fitz
 from oauth2client.service_account import ServiceAccountCredentials
 from PyPDF2 import PdfReader
 
