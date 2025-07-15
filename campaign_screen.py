@@ -96,30 +96,50 @@ if st.button("📊 Mostra ranking & matrice KPI"):
     else:
         st.warning("Carica prima un file Excel.")
 
-# Genera messaggi
+# --- Step: Genera messaggi personalizzati ---
 if st.button("🧠 Genera messaggi personalizzati"):
-    df = st.session_state.get("excel_df")
+    df = st.session_state.get("ranked_df")
     if df is not None:
-        output_df = generate_personalized_messages(df)
-        st.session_state["personalized_messages"] = output_df
-        st.subheader("📩 Messaggi generati")
-        st.dataframe(output_df)
+        with st.spinner("🔄 Generazione messaggi in corso..."):
+            selected_framework = st.selectbox("📐 Scegli un framework", ["Auto (da score)", "TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
+            output_df = generate_personalized_messages(df, framework_override=selected_framework)
+            st.session_state["personalized_messages"] = output_df
+            st.success("✔️ Messaggi generati con successo!")
 
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-            output_df.to_excel(writer, index=False, sheet_name="Messaggi")
-        st.download_button(
-            label="📥 Scarica messaggi in Excel",
-            data=buffer.getvalue(),
-            file_name="messaggi_personalizzati.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+# --- Step: Visualizza e modifica messaggi ---
+output_df = st.session_state.get("personalized_messages")
+if output_df is not None:
+    st.subheader("📩 Messaggi personalizzati")
+    for i, row in output_df.iterrows():
+        st.markdown(f"##### 🎯 [{row['Nome']} – {row['Azienda']} – {row['Ruolo']}]")
+        new_msg = st.text_area(f"✏️ Modifica messaggio", value=row['Messaggio generato'], key=f"msg_edit_{i}")
+        output_df.at[i, "Messaggio generato"] = new_msg
 
-        if st.button("💾 Salva tutti nella libreria"):
-            for _, row in output_df.iterrows():
-                msg = f"{row['Messaggio generato']}"
-                tipo = "Messaggio personalizzato"
-                save_to_library(tipo, msg)
-            st.success("✅ Salvati nella libreria.")
+    # Scarica Excel aggiornato
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        output_df.to_excel(writer, index=False, sheet_name="Messaggi")
+    st.download_button("📥 Scarica messaggi", data=buffer.getvalue(), file_name="messaggi_personalizzati.xlsx")
+
+    # Salva in libreria
+    if st.button("💾 Salva tutti in libreria"):
+        for _, row in output_df.iterrows():
+            save_to_library("Messaggio personalizzato", row["Messaggio generato"])
+        st.success("📚 Messaggi salvati nella libreria!")
+
+# --- Step-critical GPT chat ---
+st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
+user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_prompt_messages")
+
+if st.button("✉️ Invia alla chat AI", key="send_chat_prompt_messages"):
+    if user_prompt:
+        with st.spinner("💬 Risposta AI in corso..."):
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": user_prompt}],
+                temperature=0.6,
+            )
+            st.markdown("**Risposta AI:**")
+            st.write(response.choices[0].message.content)
     else:
-        st.warning("Carica prima un file Excel.")
+        st.warning("Scrivi qualcosa prima di inviare.")
