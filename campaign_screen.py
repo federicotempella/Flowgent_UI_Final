@@ -102,14 +102,15 @@ if st.button("📊 Mostra ranking & matrice KPI"):
         st.warning("Carica prima un file Excel.")
 
 # --- Step: Genera messaggi personalizzati ---
-if st.button("🧠 Genera messaggi personalizzati"):
-    df = st.session_state.get("ranked_df")
-    if df is not None:
-        with st.spinner("🔄 Generazione messaggi in corso..."):
-            selected_framework = st.selectbox("📐 Scegli un framework", ["Auto (da score)", "TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
-            output_df = generate_personalized_messages(df, framework_override=selected_framework)
-            st.session_state["personalized_messages"] = output_df
-            st.success("✔️ Messaggi generati con successo!")
+with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
+    if st.button("🧠 Genera messaggi personalizzati"):
+        df = st.session_state.get("ranked_df")
+        if df is not None:
+            with st.spinner("🔄 Generazione messaggi in corso..."):
+                selected_framework = st.selectbox("📐 Scegli un framework", ["Auto (da score)", "TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
+                output_df = generate_personalized_messages(df, framework_override=selected_framework)
+                st.session_state["personalized_messages"] = output_df
+                st.success("✔️ Messaggi generati con successo!")
 
 # --- Step: Visualizza e modifica messaggi ---
 output_df = st.session_state.get("personalized_messages")
@@ -141,6 +142,7 @@ if df is not None and not df.empty:
     include_inmail = st.checkbox("✉️ Includi InMail?", value=False)
     sequence_length = st.selectbox("🔢 Versione sequenza SDR", ["Standard (8 step)", "Lunga (11 step)"], index=0 if role_type == "AE" else 1)
 
+with st.expander("🎯 Genera sequenza multicanale", expanded=False):
     if st.button("🎯 Genera sequenza multicanale"):
         with st.spinner("🧠 Generazione sequenza in corso..."):
             sequence_df = generate_multichannel_sequence(
@@ -187,7 +189,6 @@ if sequence_df is not None and not sequence_df.empty:
     ax.set_title("Distribuzione delle azioni nella sequenza")
     ax.grid(axis="y")
     st.pyplot(fig)
-
 
 
     # 🔁 Pulsante rigenerazione con altro framework
