@@ -128,6 +128,58 @@ if output_df is not None:
             save_to_library("Messaggio personalizzato", row["Messaggio generato"])
         st.success("📚 Messaggi salvati nella libreria!")
 
+# --- Step: Sequenza multicanale completa ---
+st.markdown("## 🧩 4. Sequenza multicanale completa")
+
+df = st.session_state.get("personalized_messages")
+if df is not None and not df.empty:
+    role_type = st.selectbox("👤 Tipo di ruolo", ["AE", "SDR"])
+    include_inmail = st.checkbox("✉️ Includi InMail?", value=False)
+    sequence_length = st.selectbox("🔢 Versione sequenza SDR", ["Standard (8 step)", "Lunga (11 step)"], index=0 if role_type == "AE" else 1)
+
+    if st.button("🎯 Genera sequenza multicanale"):
+        with st.spinner("🧠 Generazione sequenza in corso..."):
+            sequence_df = generate_multichannel_sequence(
+                df,
+                role_type=role_type,
+                include_inmail=include_inmail,
+                sequence_type="long" if sequence_length == "Lunga (11 step)" else "standard"
+            )
+            st.session_state["multichannel_sequence"] = sequence_df
+            st.success("✅ Sequenza multicanale generata!")
+
+# --- Visualizzazione e modifica sequenza ---
+sequence_df = st.session_state.get("multichannel_sequence")
+if sequence_df is not None and not sequence_df.empty:
+    st.subheader("📬 Sequenza multicanale generata")
+
+    for i, row in sequence_df.iterrows():
+        st.markdown(f"#### 🔹 Giorno {row['Giorno']} – {row['Tipo Azione']}")
+        st.markdown(f"**Target:** {row['Nome']} ({row['Ruolo']} – {row['Azienda']})")
+        new_msg = st.text_area("✏️ Modifica messaggio", value=row["Messaggio"], key=f"seq_msg_{i}")
+        sequence_df.at[i, "Messaggio"] = new_msg
+
+    # 🔁 Pulsante rigenerazione con altro framework
+    st.markdown("### 🔁 Vuoi provare un altro framework?")
+    new_framework = st.selectbox("📐 Scegli framework alternativo", ["TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
+    if st.button("♻️ Rigenera con framework alternativo"):
+        with st.spinner("🧠 Rigenerazione in corso..."):
+            alt_seq = generate_multichannel_sequence(
+                df,
+                role_type=role_type,
+                include_inmail=include_inmail,
+                sequence_type="long" if sequence_length == "Lunga (11 step)" else "standard",
+                framework_override=new_framework
+            )
+            st.session_state["multichannel_sequence"] = alt_seq
+            st.rerun()
+
+    # 💾 Salvataggio in libreria
+    if st.button("📚 Salva tutta la sequenza in libreria"):
+        for _, row in sequence_df.iterrows():
+            save_to_library("Sequenza multicanale", row["Messaggio"])
+        st.success("✅ Sequenza salvata nella libreria!")
+
 # --- Step-critical GPT chat ---
 st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
 user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_prompt_messages")
