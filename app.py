@@ -17,6 +17,7 @@ from utils import (
     parse_pdf_files,
     analyze_triggers_and_rank,
     generate_personalized_messages,
+    generate_multichannel_sequence,
     load_persona_matrix_from_json,
     load_all_buyer_personas,
     save_all_buyer_personas
