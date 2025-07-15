@@ -148,6 +148,63 @@ def simulate_conversation():
         else:
             st.warning("Inserisci un prompt prima di inviare.")
 
+def generate_multichannel_sequence(contact_df, sequence_type="AE", use_inmail=False):
+    sequences = []
+
+    for _, row in contact_df.iterrows():
+        name = row.get("Name", "Contatto")
+        company = row.get("Company", "Azienda")
+        role = row.get("Role", "Ruolo")
+        trigger = row.get("Trigger combinato", "")
+
+        step_list = []
+
+        if sequence_type == "AE":
+            step_list = [
+                "[Giorno 1] ✉️ Email di apertura (TIPPS + COI se score >= 4)",
+                "[Giorno 3] 🤝 Richiesta connessione LinkedIn (senza nota)",
+                "[Giorno 5] 💬 DM LinkedIn personalizzato (se accetta)",
+                "[Giorno 6] 📎 Follow-up email con case study", 
+                "[Giorno 8] 💬 DM video / voice note (se non risponde)",
+                "[Giorno 10] ✉️ Email bump consultiva",
+                "[Giorno 12] 💬 Ultimo DM: chiusura + soft CTA",
+                "[Giorno 14] 🧠 Invia asset finale (es. guida, template)"
+            ]
+            if use_inmail:
+                step_list.insert(2, "[Giorno 4] ✉️ InMail teaser (se ignorato)")
+        else:  # SDR lunga 11 step
+            step_list = [
+                "[Giorno 1] ✉️ Email teaser (1-riga, aggancia problema)",
+                "[Giorno 2] 🤝 Connessione LinkedIn (senza nota)",
+                "[Giorno 3] ✉️ InMail: hook provocatorio + mini payoff",
+                "[Giorno 4] 💬 DM breve: 'Curioso come lo affrontate internamente?'",
+                "[Giorno 5] 🎙️ Voice Note LinkedIn – max 30 sec, friendly",
+                "[Giorno 6] ✉️ Follow-up Email (TIPPS)",
+                "[Giorno 7] 📞 Cold Call (se apertura o trigger forte)",
+                "[Giorno 9] 💬 Interazione post LinkedIn (like/commento)",
+                "[Giorno 11] ✉️ Bump: 'Mando tutto a cestino o ha senso riprendere?'",
+                "[Giorno 13] 📎 DM consultivo: case simile + spunto",
+                "[Giorno 15] 🏁 Ultimo touch o passa ad AE"
+            ]
+
+        # Inserimento automatico CALL o BUMP
+        call_trigger_keywords = ["interesse", "ebook", "pdf", "evento", "demo", "profilo", "engagement", "aperto", "letto"]
+        bump_keywords = ["nessuna risposta", "ghosting", "non ha risposto", "nessun feedback", "ignorato"]
+
+        if any(k in trigger.lower() for k in call_trigger_keywords):
+            step_list.append("[Giorno 16] 📞 Call suggerita – il contatto ha mostrato segnali di interesse")
+        elif any(k in trigger.lower() for k in bump_keywords):
+            step_list.append("[Giorno 17] ⏪ Bump finale (DM o Email) – stimola reazione se silenzio prolungato")
+
+        sequences.append({
+            "Name": name,
+            "Company": company,
+            "Role": role,
+            "Sequenza multicanale": step_list
+        })
+
+    return sequences
+
 # === 📬 POST GENERATOR ===
 def generate_post():
     st.subheader("✍️ Generatore di contenuti")
