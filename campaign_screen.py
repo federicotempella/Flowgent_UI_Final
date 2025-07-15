@@ -4,6 +4,7 @@ from utils import (
     parse_pdf_files,
     analyze_triggers_and_rank,
     generate_personalized_messages,
+    generate_multichannel_sequence,
     save_to_library,
     load_all_buyer_personas
 )
