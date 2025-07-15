@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import io
+from docx import Document
+from io import BytesIO
 import matplotlib.pyplot as plt
 
 from utils import (
@@ -165,7 +167,15 @@ if sequence_df is not None and not sequence_df.empty:
 
     st.markdown("### 🗓️ Calendario visuale (distribuzione per giorno)")
 
-    day_counts = sequence_df["Giorno"].value_counts().sort_index()
+    action_filter = st.multiselect("Filtra per tipo azione", options=sequence_df["Tipo Azione"].unique(), default=sequence_df["Tipo Azione"].unique())
+target_filter = st.multiselect("Filtra per ruolo target", options=sequence_df["Ruolo"].unique(), default=sequence_df["Ruolo"].unique())
+
+filtered_df = sequence_df[
+    (sequence_df["Tipo Azione"].isin(action_filter)) &
+    (sequence_df["Ruolo"].isin(target_filter))
+]
+    
+    day_counts = filtered_df["Giorno"].value_counts().sort_index()
     fig, ax = plt.subplots(figsize=(8, 3))
     ax.bar(day_counts.index, day_counts.values)
     ax.set_xlabel("Giorno")
@@ -201,6 +211,18 @@ if sequence_df is not None and not sequence_df.empty:
     sequence_df.to_csv(csv_buffer, index=False)
     st.download_button("📥 Scarica CSV sequenza", data=csv_buffer.getvalue(), file_name="sequenza_multicanale.csv", mime="text/csv")
 
+    # Genera e scarica in Word
+    doc = Document()
+    doc.add_heading("Sequenza Multicanale", level=1)
+    for _, row in sequence_df.iterrows():
+        msg = f"Giorno {row['Giorno']} – {row['Tipo Azione']} – {row['Nome']} ({row['Ruolo']} – {row['Azienda']}):\n{row['Messaggio']}"
+        doc.add_paragraph(msg)
+
+    word_buffer = BytesIO()
+    doc.save(word_buffer)
+    word_buffer.seek(0)
+
+st.download_button("📥 Scarica in Word", data=word_buffer, file_name="sequenza_multicanale.docx")
 
 # --- Step-critical GPT chat ---
 st.markdown("## 🧠 5. Affina la sequenza con l’assistente AI")
