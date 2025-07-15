@@ -1,4 +1,8 @@
 import streamlit as st
+import pandas as pd
+import io
+import matplotlib.pyplot as plt
+
 from utils import (
     parse_excel_file,
     parse_pdf_files,
@@ -8,8 +12,6 @@ from utils import (
     save_to_library,
     load_all_buyer_personas
 )
-import pandas as pd
-import io
 
 st.subheader("🚀 Avvia una nuova campagna")
 
@@ -159,6 +161,21 @@ if sequence_df is not None and not sequence_df.empty:
         new_msg = st.text_area("✏️ Modifica messaggio", value=row["Messaggio"], key=f"seq_msg_{i}")
         sequence_df.at[i, "Messaggio"] = new_msg
 
+    import matplotlib.pyplot as plt
+
+    st.markdown("### 🗓️ Calendario visuale (distribuzione per giorno)")
+
+    day_counts = sequence_df["Giorno"].value_counts().sort_index()
+    fig, ax = plt.subplots(figsize=(8, 3))
+    ax.bar(day_counts.index, day_counts.values)
+    ax.set_xlabel("Giorno")
+    ax.set_ylabel("Numero azioni")
+    ax.set_title("Distribuzione delle azioni nella sequenza")
+    ax.grid(axis="y")
+
+    st.pyplot(fig)
+
+
     # 🔁 Pulsante rigenerazione con altro framework
     st.markdown("### 🔁 Vuoi provare un altro framework?")
     new_framework = st.selectbox("📐 Scegli framework alternativo", ["TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
@@ -180,11 +197,17 @@ if sequence_df is not None and not sequence_df.empty:
             save_to_library("Sequenza multicanale", row["Messaggio"])
         st.success("✅ Sequenza salvata nella libreria!")
 
-# --- Step-critical GPT chat ---
-st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
-user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_prompt_messages")
+    csv_buffer = io.StringIO()
+    sequence_df.to_csv(csv_buffer, index=False)
+    st.download_button("📥 Scarica CSV sequenza", data=csv_buffer.getvalue(), file_name="sequenza_multicanale.csv", mime="text/csv")
 
-if st.button("✉️ Invia alla chat AI", key="send_chat_prompt_messages"):
+
+# --- Step-critical GPT chat ---
+st.markdown("## 🧠 5. Affina la sequenza con l’assistente AI")
+st.markdown("### 🤖 Chatta con l’assistente AI sui messaggi")
+user_prompt = st.text_area("Hai domande o vuoi modificarli con GPT?", key="chat_seq_prompt")
+
+if st.button("✉️ Invia alla chat AI", key="send_chat_seq_prompt"):
     if user_prompt:
         with st.spinner("💬 Risposta AI in corso..."):
             response = openai.ChatCompletion.create(
@@ -196,3 +219,5 @@ if st.button("✉️ Invia alla chat AI", key="send_chat_prompt_messages"):
             st.write(response.choices[0].message.content)
     else:
         st.warning("Scrivi qualcosa prima di inviare.")
+
+
