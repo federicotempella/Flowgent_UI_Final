@@ -152,6 +152,9 @@ if df is not None and not df.empty:
             st.session_state["multichannel_sequence"] = sequence_df
             st.success("✅ Sequenza multicanale generata!")
 
+# Toggle per mostrare o nascondere il grafico
+show_chart = st.checkbox("📊 Mostra il calendario visivo della sequenza", value=True)    
+
 # --- Visualizzazione e modifica sequenza ---
 sequence_df = st.session_state.get("multichannel_sequence")
 if sequence_df is not None and not sequence_df.empty:
@@ -165,16 +168,17 @@ if sequence_df is not None and not sequence_df.empty:
 
     import matplotlib.pyplot as plt
 
+   if show_chart:
     st.markdown("### 🗓️ Calendario visuale (distribuzione per giorno)")
 
     action_filter = st.multiselect("Filtra per tipo azione", options=sequence_df["Tipo Azione"].unique(), default=sequence_df["Tipo Azione"].unique())
-target_filter = st.multiselect("Filtra per ruolo target", options=sequence_df["Ruolo"].unique(), default=sequence_df["Ruolo"].unique())
+    target_filter = st.multiselect("Filtra per ruolo target", options=sequence_df["Ruolo"].unique(), default=sequence_df["Ruolo"].unique())
 
-filtered_df = sequence_df[
-    (sequence_df["Tipo Azione"].isin(action_filter)) &
-    (sequence_df["Ruolo"].isin(target_filter))
-]
-    
+    filtered_df = sequence_df[
+        (sequence_df["Tipo Azione"].isin(action_filter)) &
+        (sequence_df["Ruolo"].isin(target_filter))
+    ]
+
     day_counts = filtered_df["Giorno"].value_counts().sort_index()
     fig, ax = plt.subplots(figsize=(8, 3))
     ax.bar(day_counts.index, day_counts.values)
@@ -182,8 +186,8 @@ filtered_df = sequence_df[
     ax.set_ylabel("Numero azioni")
     ax.set_title("Distribuzione delle azioni nella sequenza")
     ax.grid(axis="y")
-
     st.pyplot(fig)
+
 
 
     # 🔁 Pulsante rigenerazione con altro framework
@@ -207,11 +211,18 @@ filtered_df = sequence_df[
             save_to_library("Sequenza multicanale", row["Messaggio"])
         st.success("✅ Sequenza salvata nella libreria!")
 
+   if sequence_df is not None and not sequence_df.empty:
+    # Scarica CSV
     csv_buffer = io.StringIO()
     sequence_df.to_csv(csv_buffer, index=False)
-    st.download_button("📥 Scarica CSV sequenza", data=csv_buffer.getvalue(), file_name="sequenza_multicanale.csv", mime="text/csv")
+    st.download_button(
+        "📥 Scarica CSV sequenza",
+        data=csv_buffer.getvalue(),
+        file_name="sequenza_multicanale.csv",
+        mime="text/csv"
+    )
 
-    # Genera e scarica in Word
+    # Scarica in Word
     doc = Document()
     doc.add_heading("Sequenza Multicanale", level=1)
     for _, row in sequence_df.iterrows():
@@ -222,7 +233,12 @@ filtered_df = sequence_df[
     doc.save(word_buffer)
     word_buffer.seek(0)
 
-st.download_button("📥 Scarica in Word", data=word_buffer, file_name="sequenza_multicanale.docx")
+    st.download_button(
+        "📥 Scarica in Word",
+        data=word_buffer,
+        file_name="sequenza_multicanale.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
 
 # --- Step-critical GPT chat ---
 st.markdown("## 🧠 5. Affina la sequenza con l’assistente AI")
