@@ -1,4 +1,6 @@
 import streamlit as st
+import json
+import os
 from PIL import Image
 import pandas as pd
 import io
@@ -29,6 +31,23 @@ from utils import (
     save_all_buyer_personas
 )
 
+def load_json(path: str) -> dict:
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+# --- Qui inserisci la funzione ---
+def load_resource(resource_type: str) -> dict:
+    live = st.session_state.get(f"{resource_type}_live", {})
+    user_data = load_json(f"resources/{resource_type}.json")
+    master_data = load_json(f"resources/{resource_type}_master.json")
+
+    merged = master_data.copy()
+    merged.update(user_data)
+    merged.update(live)
+    return merged
+
 # --- CONFIG ---
 st.set_page_config(page_title="Flowgent AI", layout="wide")
 logo = load_logo()
@@ -41,6 +60,16 @@ st.title("Ciao 👋 cosa vuoi fare oggi?")
 
 with st.expander("⚙️ Impostazioni utente", expanded=False):
     show_settings()
+
+# --- STEP 3: CARICA I FRAMEWORK ---
+frameworks = load_resource("frameworks")
+
+# --- VISUALIZZA FRAMEWORK NELLA UI ---
+st.title("📚 Framework disponibili")
+for fw in frameworks.values():
+    st.markdown(f"### {fw['name']}")
+    st.markdown(f"{fw['description']}")
+    st.markdown("---")
 
 # --- SIDEBAR ---
 st.sidebar.title("📌 Menu")
