@@ -1,4 +1,10 @@
 import streamlit as st
+from PIL import Image
+import pandas as pd
+import io
+import matplotlib.pyplot as plt
+from io import BytesIO
+from docx import Document
 from utils import (
     load_logo,
     simulate_conversation,
@@ -22,12 +28,6 @@ from utils import (
     load_all_buyer_personas,
     save_all_buyer_personas
 )
-from PIL import Image
-import pandas as pd
-import io
-import matplotlib.pyplot as plt
-from io import BytesIO
-from docx import Document
 
 # --- CONFIG ---
 st.set_page_config(page_title="Flowgent AI", layout="wide")
