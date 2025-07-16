@@ -1,0 +1,195 @@
+[
+  {
+    "id": "tipps",
+    "name": "TIPPS",
+    "description": "Cold email framework: Trigger, Implication, Pain, Proof, Solution.",
+    "usage": "Usato per email outbound con struttura narrativa consultiva.",
+    "structure": [
+      "Trigger",
+      "Implication",
+      "Pain",
+      "Proof (case study)",
+      "Solution",
+      "CTA"
+    ]
+  },
+  {
+    "id": "tipps_coi",
+    "name": "TIPPS + COI",
+    "description": "Versione avanzata di TIPPS con focus su Cost of Inaction.",
+    "usage": "Email che rafforzano l'urgenza mostrando il costo del non agire.",
+    "structure": [
+      "Trigger",
+      "Implication",
+      "Pain",
+      "Cost of Inaction",
+      "Solution",
+      "CTA"
+    ]
+  },
+  {
+    "id": "one_sentence_email",
+    "name": "1-Sentence Email",
+    "description": "Domanda diretta orientata a generare risposta.",
+    "usage": "Usata in InMail teaser o come bump rapido.",
+    "structure": [
+      "Problem",
+      "Obstacle",
+      "Quick benefit",
+      "Question"
+    ]
+  },
+  {
+    "id": "poke_the_bear",
+    "name": "Poke the Bear",
+    "description": "Domande provocatorie e neutrali per stimolare riflessione.",
+    "usage": "Follow-up nurturing o in caso di silenzio.",
+    "structure": [
+      "Neutral Question",
+      "Latent Problem",
+      "Subtle Insight",
+      "CTA"
+    ]
+  },
+  {
+    "id": "discovery_questions",
+    "name": "6 Discovery Questions",
+    "description": "Domande per valutare urgenza, impatto, autorità e priorità.",
+    "usage": "Call consultiva o follow-up post-demo.",
+    "structure": [
+      "Business priority",
+      "Symptoms",
+      "Impact",
+      "Alternatives",
+      "Timing",
+      "Risks"
+    ]
+  },
+  {
+    "id": "linkedin_trigger_pain_outcome_cta",
+    "name": "LinkedIn DM – Trigger → Pain → Outcome → CTA",
+    "description": "Struttura DM per collegamenti e follow-up su LinkedIn.",
+    "usage": "Messaggi brevi ed efficaci per prospecting social.",
+    "structure": [
+      "Trigger",
+      "Problem",
+      "Desired Outcome",
+      "Call to Action"
+    ]
+  },
+  {
+    "id": "linkedin_calendar_30_days",
+    "name": "Calendario LinkedIn 30 Giorni",
+    "description": "Piano operativo quotidiano per attività di prospecting su LinkedIn.",
+    "usage": "Strategia SDR/AE per costruzione relazione e awareness.",
+    "structure": [
+      "Giorno 1–30",
+      "Azioni quotidiane",
+      "Tipologia contenuto",
+      "Engagement"
+    ]
+  },
+  {
+    "id": "neat_cleanup",
+    "name": "NEAT – Anti-jargon cleanup",
+    "description": "Filtro stile linguistico per email pulite e chiare.",
+    "usage": "Usato come check linguistico prima dell’invio.",
+    "rules": [
+      "Evita frasi vuote come 'siamo leader di settore'",
+      "Evita 'vorremmo', 'ci piacerebbe'",
+      "CTA diretta: 'Hai 15 minuti domani?'",
+      "Tono attivo e chiaro"
+    ]
+  },
+  {
+    "id": "neat_framework",
+    "name": "NEAT – Sales Qualification",
+    "description": "Framework di qualificazione: Need, Economic Impact, Access to Authority, Timeline.",
+    "usage": "Usato per discovery call o nurturing consultivo.",
+    "structure": [
+      "Need",
+      "Economic Impact",
+      "Access to Authority",
+      "Timeline"
+    ]
+  },
+  {
+    "id": "neat_email_structure",
+    "name": "NEAT – Email Structure",
+    "description": "Struttura email outbound basata su NEAT: problema, impatto, autorità, tempo.",
+    "usage": "Email consultive o follow-up qualificati.",
+    "structure": [
+      "Need",
+      "Economic Pain",
+      "Access (multi-thread hint)",
+      "Timing CTA"
+    ]
+  },
+  {
+    "id": "show_me_you_know_me",
+    "name": "Show Me You Know Me",
+    "description": "Framework di apertura personalizzata basata su segnali pubblici e personali.",
+    "usage": "Usato per rompere il ghiaccio in cold email e DM.",
+    "structure": [
+      "Segnale personale",
+      "Problema ipotizzato",
+      "Domanda o CTA"
+    ]
+  },
+  {
+    "id": "marination_objection",
+    "name": "Marination – Obiezioni latenti",
+    "description": "Metodo per gestire obiezioni non esplicite con domande esplorative.",
+    "usage": "Risposte a soft reply o silenzio prolungato.",
+    "structure": [
+      "Domanda riflessiva",
+      "Evidenza soft",
+      "CTA esplorativa"
+    ]
+  },
+  {
+    "id": "objection_map_latent_visible",
+    "name": "Mappa Obiezioni – Latente → Visibile",
+    "description": "Schema per trasformare resistenza latente in obiezione esplicita.",
+    "usage": "Supporto interno al sales per leggere i segnali.",
+    "structure": [
+      "Trigger latente",
+      "Segnale di paura",
+      "Domanda mirror",
+      "Conferma/risposta"
+    ]
+  },
+  {
+    "id": "linkedin_comment_to_dm",
+    "name": "LinkedIn Comment → DM",
+    "description": "Prompt per passare da commento pubblico a messaggio privato.",
+    "usage": "Usato in strategia di nurturing post-interazione.",
+    "structure": [
+      "Riferimento commento",
+      "Collegamento al tema",
+      "Domanda leggera"
+    ]
+  },
+  {
+    "id": "bold_insight",
+    "name": "Bold Insight",
+    "description": "Apertura forte basata su un dato o tendenza che rompe lo status quo.",
+    "usage": "Step 1 email SDR o messaggi di rottura.",
+    "structure": [
+      "Dato",
+      "Contrasto",
+      "Domanda"
+    ]
+  },
+  {
+    "id": "challenger_framework",
+    "name": "Challenger Framework (T-T-T)",
+    "description": "Framework consultivo: Teach → Tailor → Take Control.",
+    "usage": "Email strategiche, follow-up demo, AE consultivi.",
+    "structure": [
+      "Teach (insight)",
+      "Tailor (ruolo/industry)",
+      "Take Control (CTA forte)"
+    ]
+  }
+]
