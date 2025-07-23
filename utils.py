@@ -448,9 +448,21 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
 
 # === 🧠 Personalizzazione multivariabile con GPT ===
 import openai
+import pandas as pd
+import json
+import os
+
+# Funzione per caricare framework live
+def load_frameworks():
+    path_master = "resources/frameworks_master.json"
+    if os.path.exists(path_master):
+        with open(path_master, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
 
 def generate_personalized_messages(ranked_df, framework_override=None):
     messages = []
+    frameworks_all = load_frameworks()
 
     for _, row in ranked_df.iterrows():
         nome = row.get("Nome", "")
@@ -459,23 +471,42 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         trigger = row.get("Trigger rilevato", "")
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
-        framework = row.get("Framework", "")
+        framework_id = row.get("Framework", "")
 
-        # Override framework se l'utente lo ha scelto
+        # Override framework se l'utente ha selezionato uno
         if framework_override and framework_override != "Auto (da score)":
-            framework = framework_override
+            framework_id = framework_override
 
-        # Componi prompt per GPT
-        prompt = f"""Scrivi un messaggio di sales outbound per LinkedIn o email basato su questo contesto:
+        selected_fw = frameworks_all.get(framework_id)
+        if not selected_fw:
+            structure_text = "TIPPS: Trigger, Issue, Positioning, Proof, Step"
+            framework_name = framework_id
+            description = ""
+        else:
+            structure = selected_fw.get("structure", selected_fw.get("rules", []))
+            structure_text = "\n".join(f"- {s}" for s in structure)
+            framework_name = selected_fw["name"]
+            description = selected_fw["description"]
+
+        # PROMPT GPT
+        prompt = f"""Scrivi un messaggio outbound seguendo il framework selezionato.
+
+📘 Framework: {framework_name}
+📋 Descrizione: {description}
+
+🧩 Struttura:
+{structure_text}
+
+📎 Contesto:
 - Nome: {nome}
 - Azienda: {azienda}
 - Ruolo: {ruolo}
 - Trigger: {trigger}
 - KPI: {kpi}
 - Pain: {pain}
-- Framework da usare: {framework}
 
-Lo stile deve essere sintetico, rilevante e con un chiaro payoff. Evita frasi generiche. Chiusura con call-to-action soft.
+Obiettivo: ottenere risposta o apertura. Tono diretto, rilevante e professionale.
+Evita frasi generiche. Concludi con una call-to-action soft.
 """
 
         try:
