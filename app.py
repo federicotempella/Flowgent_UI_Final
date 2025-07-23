@@ -161,25 +161,55 @@ if action == "persona":
                 st.warning(f"❌ Errore nel log automatico: {e}")
 
 
-    with st.expander("📂 Buyer Persona già salvate"):
-        buyer_personas = load_all_buyer_personas()
-        industries = sorted(set(
-            industry
-            for role_data in buyer_personas.values()
-            for industry in role_data.get("industries", {}).keys()
-        ))
-        roles = sorted(buyer_personas.keys())
+  with st.expander("📂 Buyer Persona già salvate"):
+    # Carica da user + master per distinguere origine
+    custom_data = load_json("resources/buyer_personas.json")
+    master_data = load_json("resources/buyer_personas_master.json")
+    all_roles = sorted(set(custom_data.keys()) | set(master_data.keys()))
 
-        selected_industry = st.selectbox("📂 Scegli il settore", industries)
-        selected_role = st.selectbox("🧑‍💼 Scegli il ruolo", roles)
-
-        selected_data = buyer_personas.get(selected_role, {}).get("industries", {}).get(selected_industry)
-        if selected_data:
-            st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
-            st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
-            st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
+    # Aggiungi etichetta visiva per ogni ruolo
+    display_roles = []
+    for r in all_roles:
+        if r in custom_data:
+            display_roles.append(f"🟡 {r}")
         else:
-            st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
+            display_roles.append(f"🟢 {r}")
+
+    # Mappa visualizzazione → ruolo reale
+    role_map = {v: k for k, v in zip(all_roles, display_roles)}
+
+    selected_display_role = st.selectbox("🧑‍💼 Scegli il ruolo", display_roles)
+    selected_role = role_map[selected_display_role]
+
+    # Carica i settori per il ruolo selezionato
+    industries = sorted(
+        list(
+            set(
+                master_data.get(selected_role, {}).get("industries", {}).keys()
+            ).union(
+                set(custom_data.get(selected_role, {}).get("industries", {}).keys())
+            )
+        )
+    )
+
+    selected_industry = st.selectbox("📂 Scegli il settore", industries)
+
+    # Origine visiva (ufficiale vs personalizzata)
+    origin = "🟡 Personalizzata" if selected_role in custom_data else "🟢 Ufficiale"
+    st.markdown(f"**Origine della buyer persona selezionata:** {origin}")
+
+    # Dati finali unificati (user override)
+    full_data = master_data.get(selected_role, {}).copy()
+    full_data.update(custom_data.get(selected_role, {}))
+
+    selected_data = full_data.get("industries", {}).get(selected_industry)
+    if selected_data:
+        st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
+        st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
+        st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
+    else:
+        st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
+
 
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
