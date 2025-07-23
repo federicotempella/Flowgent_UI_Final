@@ -530,41 +530,47 @@ Evita frasi generiche. Concludi con una call-to-action soft.
 
 # utils.py
 
+import streamlit as st
 import json, os
 
-base_file = "data/persona_matrix_extended.json"
-custom_file = "data/buyer_personas.json"
+base_file = "resources/buyer_personas_master.json"
+custom_file = "resources/buyer_personas.json"
 
 def load_all_buyer_personas():
-    # 1. Carica le buyer persona di base (precaricate nel modello v3)
+    base_data = {}
+    custom_data = {}
+    live_data = st.session_state.get("buyer_personas_live", {})
+
     if os.path.exists(base_file):
-        with open(base_file, "r") as f:
+        with open(base_file, "r", encoding="utf-8") as f:
             base_data = json.load(f)
-    else:
-        base_data = {}
 
-    # 2. Carica le buyer persona salvate dall'utente
     if os.path.exists(custom_file):
-        with open(custom_file, "r") as f:
+        with open(custom_file, "r", encoding="utf-8") as f:
             custom_data = json.load(f)
-    else:
-        custom_data = {}
 
-    # 3. Merge: custom_data ha priorità
+    # Merge con priorità: live > custom > base
     merged = base_data.copy()
 
     for role, role_data in custom_data.items():
         if role not in merged:
             merged[role] = role_data
         else:
-            # Merge delle industry: custom ha priorità
+            merged[role]["industries"] = {
+                **merged[role].get("industries", {}),
+                **role_data.get("industries", {})
+            }
+
+    for role, role_data in live_data.items():
+        if role not in merged:
+            merged[role] = role_data
+        else:
             merged[role]["industries"] = {
                 **merged[role].get("industries", {}),
                 **role_data.get("industries", {})
             }
 
     return merged
-
 
 def save_all_buyer_personas(data):
     # Salva solo nel file custom (quelle modificate/aggiunte dall’utente)
