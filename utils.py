@@ -515,7 +515,7 @@ def generate_personalized_messages(ranked_df, framework_override=None):
     frameworks_all = load_frameworks()
 
     for _, row in ranked_df.iterrows():
-        row = fallback_missing_fields(row_raw.copy())
+        row = fallback_missing_fields(row.copy())
         
         nome = row.get("Nome", "")
         azienda = row.get("Azienda", "")
@@ -524,6 +524,7 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
         framework_id = row.get("Framework", "")
+        industry = row.get("Settore", "custom")  # se disponibile
 
         # 🔄 Se mancanti, prova a completarli con GPT
         if not pain and trigger and ruolo:
