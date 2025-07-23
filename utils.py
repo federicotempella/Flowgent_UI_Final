@@ -113,6 +113,7 @@ def save_to_library(tipo, contenuto):
     except Exception as e:
         st.error(f"Errore nel salvataggio in libreria: {str(e)}")
 
+
 # === Branding ===
 def load_logo(path="logo.png"):
     try:
@@ -514,6 +515,8 @@ def generate_personalized_messages(ranked_df, framework_override=None):
     frameworks_all = load_frameworks()
 
     for _, row in ranked_df.iterrows():
+        row = fallback_missing_fields(row_raw.copy())
+        
         nome = row.get("Nome", "")
         azienda = row.get("Azienda", "")
         ruolo = row.get("Ruolo", "")
@@ -627,6 +630,22 @@ def load_all_buyer_personas():
             }
 
     return merged
+
+
+def fallback_missing_fields(row):
+    bp_data = load_all_buyer_personas()
+    ruolo = row.get("Ruolo", "")
+    industry = "custom"  # puoi migliorarlo leggendo la colonna se presente
+
+    persona = bp_data.get(ruolo, {}).get("industries", {}).get(industry, {})
+
+    if not row.get("Pain Point") and persona.get("pain"):
+        row["Pain Point"] = persona["pain"][0]
+
+    if not row.get("KPI impattati") and persona.get("kpi"):
+        row["KPI impattati"] = persona["kpi"][0]
+
+    return row
 
 def save_all_buyer_personas(data):
     # Salva solo nel file custom (quelle modificate/aggiunte dall’utente)
