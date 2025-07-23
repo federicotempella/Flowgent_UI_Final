@@ -203,13 +203,24 @@ if action == "persona":
     full_data.update(custom_data.get(selected_role, {}))
 
     selected_data = full_data.get("industries", {}).get(selected_industry)
-    if selected_data:
-        st.markdown(f"- **Pain**: {', '.join(selected_data.get('pain', []))}")
-        st.markdown(f"- **KPI**: {', '.join(selected_data.get('kpi', []))}")
-        st.markdown(f"- **Suggerimento**: {selected_data.get('suggestion', '')}")
+    
+    pain = selected_data.get("pain", [])
+    kpi = selected_data.get("kpi", [])
+    suggestion = selected_data.get("suggestion", "")
+
+    st.markdown(f"- **Pain**: {', '.join(pain) if pain else '❌ Non definito'}")
+    st.markdown(f"- **KPI**: {', '.join(kpi) if kpi else '❌ Non definito'}")
+    st.markdown(f"- **Suggerimento**: {suggestion or '❌ Non definito'}")
+
+    # 🔔 Mostra warning
+    if not pain:
+        st.warning("⚠️ Attenzione: il campo Pain è mancante.")
+    if not kpi:
+        st.warning("⚠️ Attenzione: il campo KPI è mancante.")
+    if not suggestion:
+        st.warning("⚠️ Attenzione: manca la value proposition.")
     else:
         st.info("❌ Nessuna buyer persona trovata per questa combinazione.")
-
 
     st.markdown("---")
     st.markdown("Vuoi usare subito queste informazioni per generare messaggi?")
