@@ -50,6 +50,8 @@ def load_resource(resource_type: str) -> dict:
 
 # --- CONFIG ---
 st.set_page_config(page_title="Flowgent AI", layout="wide")
+frameworks_all = load_resource("frameworks")
+
 logo = load_logo()
 if logo:
     st.image(logo, width=160)
@@ -64,12 +66,24 @@ with st.expander("⚙️ Impostazioni utente", expanded=False):
 # --- STEP 3: CARICA I FRAMEWORK ---
 frameworks = load_resource("frameworks")
 
-# --- VISUALIZZA FRAMEWORK NELLA UI ---
-st.title("📚 Framework disponibili")
-for fw in frameworks.values():
-    st.markdown(f"### {fw['name']}")
-    st.markdown(f"{fw['description']}")
-    st.markdown("---")
+
+# --- FRAMEWORK SELEZIONABILI CON PRIORITÀ E MOSTRA TUTTI ---
+st.subheader("✍️ Seleziona un framework di scrittura")
+recommended_ids = ["tipps_coi", "tipps", "show_me_you_know_me", "challenger_framework", "bold_insight", "neat_email_structure"]
+show_all = st.checkbox("🧠 Mostra tutti i framework", value=False)
+
+if show_all:
+    fw_dict = {fw["name"]: fw for fw in frameworks_all.values()}
+else:
+    fw_dict = {fw["name"]: fw for fw in frameworks_all.values() if fw["id"] in recommended_ids}
+
+selected_fw_name = st.selectbox("Framework disponibile", list(fw_dict.keys()))
+selected_fw = fw_dict[selected_fw_name]
+
+structure = selected_fw.get("structure", selected_fw.get("rules", []))
+st.markdown("📘 **Struttura del framework selezionato:**")
+for i, step in enumerate(structure, 1):
+    st.markdown(f"**{i}.** {step}")
 
 # --- SIDEBAR ---
 st.sidebar.title("📌 Menu")
