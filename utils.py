@@ -17,6 +17,33 @@ import pandas as pd
 import re
 # altri import se presenti...
 
+
+import openai
+
+def generate_pain_from_trigger(trigger, ruolo):
+    prompt = f"""Mi dai un esempio di pain point che potrebbe avere un {ruolo} se nota questo trigger: {trigger}? Rispondi in 1 frase."""
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"GPT error: {e}"
+
+def generate_kpi_from_trigger(trigger, ruolo):
+    prompt = f"""Quale KPI potrebbe essere impattato per un {ruolo} in presenza di questo trigger: {trigger}? Rispondi in 1 frase."""
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"GPT error: {e}"
+
 def log_buyer_persona_submission(user_id, role, industry, pain, kpi, suggestion):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name("client_secret.json", scope)
