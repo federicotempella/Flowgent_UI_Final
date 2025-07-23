@@ -139,5 +139,73 @@
         "suggestion": "Digitalizza i flussi EDI/API con spedizionieri e clienti in un’unica piattaforma."
       }
     }
+  },
+  "Retail Operations Manager": {
+    "industries": {
+      "fashion retail": {
+        "pain": [
+          "Disallineamento tra canali fisici e digitali",
+          "Errori operativi nella gestione degli stock multicanale",
+          "Attivazione lenta di nuove promozioni cross-store"
+        ],
+        "kpi": [
+          "Stock accuracy",
+          "Promozioni attivate/time",
+          "Vendite per canale"
+        ],
+        "suggestion": "Collega POS, ecommerce e sistemi promozionali per garantire un'esecuzione retail armonizzata."
+      }
+    }
+  },
+  "Customer Service Manager": {
+    "industries": {
+      "cpg": {
+        "pain": [
+          "Ritardi nella gestione degli ordini clienti",
+          "Errori nei dati di consegna",
+          "Mancanza di visibilità sui flussi di ordine-fattura"
+        ],
+        "kpi": [
+          "Customer satisfaction",
+          "Tempo medio gestione ticket",
+          "Ordini evasi senza errori"
+        ],
+        "suggestion": "Automatizza i flussi O2C per offrire un'esperienza cliente senza attriti."
+      }
+    }
+  },
+  "ERP Manager": {
+    "industries": {
+      "tier1 automotive": {
+        "pain": [
+          "Integrazione difficoltosa con ERP cliente (es. SAP)",
+          "Lentezza nel mappare i processi tra ERP e flussi EDI",
+          "Dipendenza da IT esterni per ogni sviluppo"
+        ],
+        "kpi": [
+          "Tempo medio di implementazione",
+          "Numero flussi ERP automatizzati",
+          "Riduzione interventi manuali"
+        ],
+        "suggestion": "Connetti ERP, EDI e API in un’unica piattaforma no-code."
+      }
+    }
+  },
+  "Procurement Manager": {
+    "industries": {
+      "machinery": {
+        "pain": [
+          "Ordini incompleti o non confermati in tempo",
+          "Difficoltà a integrare fornitori piccoli o esteri",
+          "Ritardi causati da errori nei PO"
+        ],
+        "kpi": [
+          "PO accuracy",
+          "Lead time fornitori",
+          "Numero fornitori integrati"
+        ],
+        "suggestion": "Digitalizza l’intero ciclo P2P e onboarding fornitori per garantire flussi di approvvigionamento continui."
+      }
+    }
   }
 }
