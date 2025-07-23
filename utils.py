@@ -9,12 +9,34 @@ import gspread
 import fitz
 from oauth2client.service_account import ServiceAccountCredentials
 from PyPDF2 import PdfReader
+from date import datetime
 
 # utils.py
 
 import pandas as pd
 import re
 # altri import se presenti...
+
+def log_buyer_persona_submission(user_id, role, industry, pain, kpi, suggestion):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("client_secret.json", scope)
+    client = gspread.authorize(creds)
+
+    sheet = client.open("AI_SalesBot_UI_Log").worksheet("BuyerPersona_Log")
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    sheet.append_row([
+        now,
+        user_id,
+        role,
+        industry,
+        ", ".join(pain),
+        ", ".join(kpi),
+        suggestion,
+        "🟡 In attesa approvazione"
+    ])
+
 
 # 🔽 Inserisci subito dopo gli import
 import json
