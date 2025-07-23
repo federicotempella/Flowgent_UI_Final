@@ -522,6 +522,12 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         pain = row.get("Pain Point", "")
         framework_id = row.get("Framework", "")
 
+        # 🔄 Se mancanti, prova a completarli con GPT
+        if not pain and trigger and ruolo:
+            pain = generate_pain_from_trigger(trigger, ruolo)
+        if not kpi and trigger and ruolo:
+            kpi = generate_kpi_from_trigger(trigger, ruolo)
+
         # Override framework se l'utente ha selezionato uno
         if framework_override and framework_override != "Auto (da score)":
             framework_id = framework_override
