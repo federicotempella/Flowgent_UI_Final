@@ -543,8 +543,8 @@ def generate_personalized_messages(ranked_df, framework_override=None):
             framework_name = selected_fw["name"]
             description = selected_fw["description"]
 
-        # PROMPT GPT
-        prompt = f"""Scrivi un messaggio outbound seguendo il framework selezionato.
+        # Componi PROMPT per GPT
+        prompt = f"""Scrivi un messaggio di sales outbound per LinkedIn o email basato su questo contesto:
 
 📘 Framework: {framework_name}
 📋 Descrizione: {description}
@@ -561,6 +561,7 @@ def generate_personalized_messages(ranked_df, framework_override=None):
 - Pain: {pain}
 
 Obiettivo: ottenere risposta o apertura. Tono diretto, rilevante e professionale.
+Lo stile deve essere sintetico, rilevante e con un chiaro payoff
 Evita frasi generiche. Concludi con una call-to-action soft.
 """
 
