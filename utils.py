@@ -21,7 +21,7 @@ import json
 import os
 
 def load_persona_matrix_from_json(industry="automotive"):
-    path = "data/persona_matrix_extended.json"
+    path = "resources/buyer_personas_master.json"
     if not os.path.exists(path):
         st.warning(f"⚠️ File persona_matrix_extended.json non trovato in {path}")
         return {}
