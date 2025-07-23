@@ -1,0 +1,143 @@
+{
+  "CIO": {
+    "industries": {
+      "automotive": {
+        "pain": [
+          "Sistemi legacy che rallentano l'integrazione dei partner",
+          "Difficoltà nel migrare verso architetture cloud-native",
+          "Mancanza di visibilità centralizzata tra filiali e HQ"
+        ],
+        "kpi": [
+          "IT system uptime",
+          "Time to integrate new partner",
+          "IT cost reduction"
+        ],
+        "suggestion": "Un'unica piattaforma di integrazione per connettere sistemi e partner senza complessità custom."
+      },
+      "utilities": {
+        "pain": [
+          "Processi frammentati tra ERP, operations e supply",
+          "Sicurezza e compliance difficili da garantire",
+          "Integrazione lenta di partner regolati"
+        ],
+        "kpi": [
+          "SLA IT rispettati",
+          "Tempo medio onboarding partner",
+          "Incidenti di sicurezza"
+        ],
+        "suggestion": "Governance centralizzata e integrazione end-to-end per ridurre rischi e costi."
+      }
+    }
+  },
+  "IT Manager": {
+    "industries": {
+      "fashion retail": {
+        "pain": [
+          "Troppi touchpoint disallineati nel customer journey",
+          "Integrazioni EDI/API frammentate tra fisico e digitale",
+          "Tempi lunghi per attivare nuovi canali o partner"
+        ],
+        "kpi": [
+          "Time to market canali digitali",
+          "Accuratezza inventario",
+          "% ordini omnicanale integrati"
+        ],
+        "suggestion": "Integrazione unificata per orchestrare l’intero retail journey, dal POS al marketplace."
+      },
+      "cpg": {
+        "pain": [
+          "Errori EDI frequenti",
+          "Difficoltà nel supportare requisiti specifici dei retailer",
+          "Integrazione rigida con sistemi logistici"
+        ],
+        "kpi": [
+          "EDI success rate",
+          "Order-to-cash time",
+          "Costo medio per ordine"
+        ],
+        "suggestion": "Un’unica piattaforma per supportare ogni retailer e partner senza costi custom."
+      }
+    }
+  },
+  "Supply Chain Manager": {
+    "industries": {
+      "manufacturing": {
+        "pain": [
+          "Lead time elevati",
+          "Gestione manuale delle eccezioni",
+          "Mancanza di visibilità sullo stato spedizioni"
+        ],
+        "kpi": [
+          "On-time delivery",
+          "Exception rate",
+          "Costo logistico unitario"
+        ],
+        "suggestion": "Integra sistemi e partner logistici per ridurre ritardi e aumentare il controllo operativo."
+      }
+    }
+  },
+  "EDI Manager": {
+    "industries": {
+      "cpg": {
+        "pain": [
+          "Mantenere i mapping aggiornati per ogni retailer",
+          "Eccezioni EDI non tracciate",
+          "Dipendenza da fornitori esterni per ogni modifica"
+        ],
+        "kpi": [
+          "EDI automation rate",
+          "Errori manuali gestiti",
+          "Tempo di risposta ai retailer"
+        ],
+        "suggestion": "Controllo completo dell’EDI con governance centralizzata e visibilità operativa."
+      }
+    }
+  },
+  "CFO": {
+    "industries": {
+      "financial services": {
+        "pain": [
+          "Costi di integrazione ricorrenti e difficili da stimare",
+          "Dipendenza da troppi fornitori esterni",
+          "Mancanza di visibilità sui rischi IT e operativi"
+        ],
+        "kpi": [
+          "TCO infrastruttura IT",
+          "ROI su iniziative digitali",
+          "Rischio compliance"
+        ],
+        "suggestion": "Un’infrastruttura flessibile e tracciabile per ridurre costi e migliorare la compliance."
+      }
+    }
+  },
+  "Logistics Manager": {
+    "industries": {
+      "road logistics": {
+        "pain": [
+          "Mancanza di tracciabilità in tempo reale",
+          "Complessità nel gestire i flussi documentali con i clienti",
+          "Tempi lunghi di onboarding per nuovi committenti"
+        ],
+        "kpi": [
+          "POD time",
+          "Numero clienti attivati/mese",
+          "Errore documenti logistici"
+        ],
+        "suggestion": "Automatizza lo scambio dati con i clienti e ottimizza la supply chain documentale."
+      },
+      "sea logistics": {
+        "pain": [
+          "Dipendenza da email per l'invio di documenti",
+          "Integrazione eterogenea con spedizionieri",
+          "Errori nei BL e tempistiche doganali"
+        ],
+        "kpi": [
+          "Document accuracy",
+          "Tempo medio rilascio BL",
+          "Ciclo documentale doganale"
+        ],
+        "suggestion": "Digitalizza i flussi EDI/API con spedizionieri e clienti in un’unica piattaforma."
+      }
+    }
+  }
+}
