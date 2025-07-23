@@ -127,6 +127,9 @@ if action == "persona":
     uploaded_file = st.file_uploader("Carica PDF o Excel (opzionale)", type=["pdf", "xlsx"])
     additional_notes = st.text_area("Note aggiuntive (facoltative)")
 
+    # ✅ Checkbox per invio al modello centrale
+    send_to_admin = st.checkbox("🔄 Vuoi inviare questa buyer persona per migliorare il modello?")
+
     if st.button("💾 Salva Buyer Persona"):
         bp_data = load_all_buyer_personas()
         for role in [r.strip() for r in roles.split(",") if r.strip()]:
@@ -139,6 +142,24 @@ if action == "persona":
             }
         save_all_buyer_personas(bp_data)
         st.success("✅ Buyer Persona salvata!")
+
+        # ✅ Log automatico se selezionato
+        if send_to_admin:
+            try:
+                user_id = st.session_state.get("user_id", "anonimo")
+                for role in [r.strip() for r in roles.split(",") if r.strip()]:
+                    log_buyer_persona_submission(
+                        user_id=user_id,
+                        role=role,
+                        industry="custom",
+                        pain=[pain_1, pain_2, pain_3],
+                        kpi=["[Da definire]"],
+                        suggestion=value_prop
+                    )
+                st.success("📬 Inviata all’amministratore per valutazione.")
+            except Exception as e:
+                st.warning(f"❌ Errore nel log automatico: {e}")
+
 
     with st.expander("📂 Buyer Persona già salvate"):
         buyer_personas = load_all_buyer_personas()
