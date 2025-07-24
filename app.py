@@ -196,9 +196,23 @@ if action == "persona":
             validation_errors.append(f"🟠 Il ruolo **{role}** ha KPI mancanti o non definiti.")
 
         if validation_errors:
-            st.warning("⚠️ Alcuni dati sembrano incompleti. Controlla prima di salvare:")
+            st.warning("⚠️ Alcuni dati sembrano incompleti. Puoi modificarli manualmente oppure completare con AI.")
             for err in validation_errors:
                 st.markdown(f"- {err}")
+
+        if st.button("💡 Completa automaticamente i campi mancanti con GPT"):
+            for role, data in new_entries.items():
+                if not data["pain"] or all(p.strip() == "" for p in data["pain"]):
+                    context_text = value_prop + "\n" + (additional_notes or "")
+                    pains_gpt, _ = generate_pain_kpi_from_context(role, "custom", context_text)
+                    if pains_gpt:
+                        st.info(f"Pain generati per {role}: {pains_gpt}")
+                        data["pain"] = pains_gpt
+                if not data["kpi"] or all(k.strip() == "" or k.strip() == "[Da definire]" for k in data["kpi"]):
+                    _, kpis_gpt = generate_pain_kpi_from_context(role, "custom", context_text)
+                    if kpis_gpt:
+                        st.info(f"KPI generati per {role}: {kpis_gpt}")
+                        data["kpi"] = kpis_gpt
 
         if confirm_save:
             for role in new_entries:
