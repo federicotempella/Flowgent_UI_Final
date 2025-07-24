@@ -117,6 +117,17 @@ if action == "persona":
 
     st.markdown("#### 1️⃣ Cosa fa la tua azienda e qual è la tua value proposition?")
     value_prop = st.text_area("Value Proposition", placeholder="Es: Offriamo una piattaforma BIS per integrare partner EDI/API senza sviluppi custom...")
+    with st.expander("🧠 Potenzia la tua proposta"):
+        col1, col2 = st.columns(2)
+        if col1.button("🔎 Cerca sul web", key="web_value_prop"):
+            st.session_state["web_value_prop"] = perform_web_search(value_prop)
+            st.info("🔗 Risultato della ricerca web:")
+            st.markdown(st.session_state["web_value_prop"])
+        if col2.button("🧠 Deep Research", key="deep_value_prop"):
+            st.session_state["deep_value_prop"] = perform_deep_research(value_prop)
+            st.info("📌 Insight da deep research:")
+            st.markdown(st.session_state["deep_value_prop"])
+
 
     st.markdown("#### 2️⃣ Quali sono i 3 pain point principali che risolvi?")
     pain_1 = st.text_input("Pain Point 1")
