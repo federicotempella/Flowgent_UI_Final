@@ -18,6 +18,11 @@ from utils import (
 st.subheader("🚀 Avvia una nuova campagna")
 
 # 1. Caricamento Excel contatti
+
+with st.expander("🔍 Deep Research (opzionale)"):
+    deep_research_enabled = st.checkbox("Attiva Deep Research per ogni contatto")
+    st.session_state["deep_research"] = deep_research_enabled
+
 with st.expander("📁 1. Carica il file Excel contatti", expanded=True):
     uploaded_file = st.file_uploader("Seleziona il file Excel (.xlsx)", type=["xlsx"])
     if uploaded_file:
