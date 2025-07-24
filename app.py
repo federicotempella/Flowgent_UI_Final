@@ -186,6 +186,20 @@ if action == "persona":
         # Conferma salvataggio
         confirm_save = st.checkbox("✅ Confermo e voglio salvare queste Buyer Persona")
 
+        # ⚠️ Validazione logica pre-salvataggio
+        validation_errors = []
+
+        for role, data in new_entries.items():
+            if not data["pain"] or any(p.strip() == "" for p in data["pain"]):
+                validation_errors.append(f"🔴 Il ruolo **{role}** non ha pain point definiti.")
+            if not data["kpi"] or any(k.strip() == "" or k.strip() == "[Da definire]" for k in data["kpi"]):
+            validation_errors.append(f"🟠 Il ruolo **{role}** ha KPI mancanti o non definiti.")
+
+        if validation_errors:
+            st.warning("⚠️ Alcuni dati sembrano incompleti. Controlla prima di salvare:")
+            for err in validation_errors:
+                st.markdown(f"- {err}")
+
         if confirm_save:
             for role in new_entries:
                 bp_data[role]["industries"]["custom"] = new_entries[role]
