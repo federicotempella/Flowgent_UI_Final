@@ -198,6 +198,16 @@ if action == "persona":
         }
         preview_roles.append(role)
 
+        # ✅ Merge con esistenti e salvataggio permanente
+        for role in preview_roles:
+            if role not in bp_data:
+                bp_data[role] = {"industries": {}}
+            bp_data[role]["industries"]["custom"] = new_entries[role]
+
+        # ✅ Salva nel file JSON dell'utente
+        save_all_buyer_personas(bp_data)
+        st.success("✅ Buyer Persona salvate e subito integrate nel modello.")
+       
     # ⚠️ FALLBACK se KPI o Pain mancanti
     validation_errors = []
     for role, data in new_entries.items():
