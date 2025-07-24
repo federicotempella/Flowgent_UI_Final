@@ -137,6 +137,7 @@ if action == "persona":
     if st.button("💾 Salva Buyer Persona"):
         bp_data = load_all_buyer_personas()
         deep = st.session_state.get("deep_research", False)
+        new_entries = {}
 
     for role in [r.strip() for r in roles.split(",") if r.strip()]:
         if role not in bp_data:
@@ -145,6 +146,7 @@ if action == "persona":
         pains = [pain_1, pain_2, pain_3]
         pains = [p for p in pains if p]
         kpis = ["[Da definire]"]
+        auto_generated = False
 
         if deep and not pains:
             context_text = value_prop + "\n" + (additional_notes or "")
@@ -155,23 +157,23 @@ if action == "persona":
                 for i, p in enumerate(pain_auto, 1):
                     pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
                 pains = pain_auto
+                auto_generated = True
 
             if kpi_auto:
                 st.warning("⚠️ KPI generati automaticamente:")
                 for i, k in enumerate(kpi_auto, 1):
                     kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
                 kpis = kpi_auto
+                auto_generated = True
 
-        # Salva i risultati (modificati o originali)
-        bp_data[role]["industries"]["custom"] = {
+        # Salva i risultati temporanei
+        new_entries[role] = {
             "kpi": kpis,
             "pain": pains,
             "suggestion": value_prop
         }
 
-    save_all_buyer_personas(bp_data)
-    st.success("✅ Buyer Persona salvata!")
-
+    # Mostra anteprima f
 
         # ✅ Log automatico se selezionato
         if send_to_admin:
