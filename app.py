@@ -140,6 +140,17 @@ if action == "persona":
     st.markdown("#### 📎 Vuoi caricare risorse extra?")
     uploaded_file = st.file_uploader("Carica PDF o Excel (opzionale)", type=["pdf", "xlsx"])
     additional_notes = st.text_area("Note aggiuntive (facoltative)")
+    with st.expander("🧠 Approfondisci le note"):
+        col1, col2 = st.columns(2)
+        if col1.button("🔎 Cerca sul web", key="web_notes"):
+            st.session_state["web_notes"] = perform_web_search(additional_notes)
+            st.info("🔗 Risultato della ricerca web:")
+            st.markdown(st.session_state["web_notes"])
+        if col2.button("🧠 Deep Research", key="deep_notes"):
+            st.session_state["deep_notes"] = perform_deep_research(additional_notes)
+            st.info("📌 Insight da deep research:")
+            st.markdown(st.session_state["deep_notes"])
+
 
     # ✅ Checkbox per invio al modello centrale
     send_to_admin = st.checkbox("🔄 Vuoi inviare questa buyer persona per migliorare il modello?")
