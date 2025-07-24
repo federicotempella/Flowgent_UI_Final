@@ -67,6 +67,38 @@ def generate_kpi_from_trigger(trigger, ruolo):
     except Exception as e:
         return f"GPT error: {e}"
 
+def generate_pain_kpi_from_context(ruolo, industry, context=""):
+    # Usa GPT per generare pain e KPI a partire dal ruolo e (se disponibile) il contesto Deep Research
+    prompt = f"""
+Sei un esperto B2B. In base a questo contesto aziendale:
+
+--- CONTENUTO ---
+{context}
+------------------
+
+Scrivi 2 pain point e 2 KPI che potrebbero essere rilevanti per un {ruolo} nel settore {industry}. Rispondi in elenco puntato, prima i pain poi i KPI.
+"""
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.6,
+        )
+        text = response.choices[0].message.content.strip()
+        pain = []
+        kpi = []
+
+        for line in text.splitlines():
+            clean = line.strip("-• ").strip()
+            if clean:
+                if len(pain) < 2:
+                    pain.append(clean)
+                else:
+                    kpi.append(clean)
+        return pain, kpi
+    except Exception as e:
+        return [], []
+
 def log_buyer_persona_submission(user_id, role, industry, pain, kpi, suggestion):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name("client_secret.json", scope)
