@@ -136,16 +136,34 @@ if action == "persona":
 
     if st.button("💾 Salva Buyer Persona"):
         bp_data = load_all_buyer_personas()
-        for role in [r.strip() for r in roles.split(",") if r.strip()]:
-            if role not in bp_data:
-                bp_data[role] = {"industries": {}}
-            bp_data[role]["industries"]["custom"] = {
-                "kpi": ["[Da definire]"],
-                "pain": [pain_1, pain_2, pain_3],
-                "suggestion": value_prop
-            }
-        save_all_buyer_personas(bp_data)
-        st.success("✅ Buyer Persona salvata!")
+        deep = st.session_state.get("deep_research", False)
+
+    for role in [r.strip() for r in roles.split(",") if r.strip()]:
+        if role not in bp_data:
+            bp_data[role] = {"industries": {}}
+
+        # Se mancano i pain/kpi → prova Deep Research
+        pains = [pain_1, pain_2, pain_3]
+        pains = [p for p in pains if p]
+        kpis = ["[Da definire]"]
+
+        if deep and not pains:
+            context_text = value_prop + "\n" + (additional_notes or "")
+            pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
+            if pain_auto:
+                pains = pain_auto
+            if kpi_auto:
+                kpis = kpi_auto
+
+        bp_data[role]["industries"]["custom"] = {
+            "kpi": kpis,
+            "pain": pains,
+            "suggestion": value_prop
+        }
+
+    save_all_buyer_personas(bp_data)
+    st.success("✅ Buyer Persona salvata!")
+
 
         # ✅ Log automatico se selezionato
         if send_to_admin:
