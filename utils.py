@@ -618,6 +618,16 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         if not kpi and trigger and ruolo:
             kpi = generate_kpi_from_trigger(trigger, ruolo)
 
+        log_gpt_fallback(
+            tipo="Completamento GPT",
+            ruolo=ruolo,
+            industry="custom",
+            trigger=trigger,
+            pain=pain,
+            kpi=kpi,
+            note="Completato perché mancava pain/kpi nella riga"
+        )
+
         # Override framework se l'utente ha selezionato uno
         if framework_override and framework_override != "Auto (da score)":
             framework_id = framework_override
