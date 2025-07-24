@@ -20,6 +20,29 @@ import re
 
 import openai
 
+def perform_deep_research(company: str, role: str = "", trigger: str = "") -> str:
+    queries = [
+        f"{company} sito ufficiale",
+        f"{company} stack tecnologico o software in uso",
+        f"{company} offerte lavoro {role}" if role else f"{company} offerte lavoro",
+        f"{company} notizie recenti integrazione o progetti digitali"
+    ]
+
+    results = []
+    for query in queries:
+        try:
+            search_response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": f"Cerca online: {query}. Dammi un estratto utile per capire cosa accade in azienda. Massimo 2 frasi."}],
+                temperature=0.4,
+            )
+            answer = search_response.choices[0].message.content.strip()
+            results.append(f"🔎 {query} → {answer}")
+        except Exception as e:
+            results.append(f"❌ Errore su {query}: {e}")
+
+    return "\n".join(results)
+
 def generate_pain_from_trigger(trigger, ruolo):
     prompt = f"""Mi dai un esempio di pain point che potrebbe avere un {ruolo} se nota questo trigger: {trigger}? Rispondi in 1 frase."""
     try:
@@ -523,6 +546,14 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         trigger = row.get("Trigger rilevato", "")
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
+        
+        # ➕ Aggiunta Deep Research se attiva
+        deep = st.session_state.get("deep_research", False)
+        extra_notes = ""
+        if deep and azienda:
+           extra_notes = perform_deep_research(company=azienda, role=ruolo, trigger=trigger)
+
+        
         framework_id = row.get("Framework", "")
         industry = row.get("Settore", "custom")  # se disponibile
 
@@ -563,6 +594,9 @@ def generate_personalized_messages(ranked_df, framework_override=None):
 - Trigger: {trigger}
 - KPI: {kpi}
 - Pain: {pain}
+
+📚 Approfondimenti aggiuntivi:
+{extra_notes}
 
 Obiettivo: ottenere risposta o apertura. Tono diretto, rilevante e professionale.
 Lo stile deve essere sintetico, rilevante e con un chiaro payoff
