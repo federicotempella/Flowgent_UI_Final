@@ -392,30 +392,33 @@ if action == "persona":
         st.experimental_rerun()
 
 elif action == "simulate":
-    simulate_conversation()
-with st.expander("🧠 Stimola l’analisi GPT"):
-    col1, col2 = st.columns(2)
-    if col1.button("🔎 Cerca sul web", key="web_user_input"):
-        st.session_state["web_user_input"] = perform_web_search(user_input)
-        st.info("🔗 Risultato della ricerca web:")
-        st.markdown(st.session_state["web_user_input"])
-    if col2.button("🧠 Deep Research", key="deep_user_input"):
-        st.session_state["deep_user_input"] = perform_deep_research(user_input)
-        st.info("📌 Insight da deep research:")
-        st.markdown(st.session_state["deep_user_input"])
+    user_input = st.text_area("Scrivi un prompt...")
+    if user_input:
+        with st.expander("🧠 Stimola l’analisi GPT"):
+            col1, col2 = st.columns(2)
+            if col1.button("🔎 Cerca sul web", key="web_user_input"):
+                st.session_state["web_user_input"] = perform_web_search(user_input)
+                st.info("🔗 Risultato della ricerca web:")
+                st.markdown(st.session_state["web_user_input"])
+            if col2.button("🧠 Deep Research", key="deep_user_input"):
+                st.session_state["deep_user_input"] = perform_deep_research(user_input)
+                st.info("📌 Insight da deep research:")
+                st.markdown(st.session_state["deep_user_input"])
 
 elif action == "linkedin_post":
+    idea = st.text_input("Idea o tema del post:")
+    if idea:
+        with st.expander("🧠 Arricchisci l’idea del post"):
+            col1, col2 = st.columns(2)
+            if col1.button("🔎 Cerca sul web", key="web_post_idea"):
+                st.session_state["web_post_idea"] = perform_web_search(idea)
+                st.info("🔗 Risultato della ricerca web:")
+                st.markdown(st.session_state["web_post_idea"])
+            if col2.button("🧠 Deep Research", key="deep_post_idea"):
+                st.session_state["deep_post_idea"] = perform_deep_research(idea)
+                st.info("📌 Insight da deep research:")
+                st.markdown(st.session_state["deep_post_idea"])
     generate_post()
-with st.expander("🧠 Arricchisci l’idea del post"):
-    col1, col2 = st.columns(2)
-    if col1.button("🔎 Cerca sul web", key="web_post_idea"):
-        st.session_state["web_post_idea"] = perform_web_search(idea)
-        st.info("🔗 Risultato della ricerca web:")
-        st.markdown(st.session_state["web_post_idea"])
-    if col2.button("🧠 Deep Research", key="deep_post_idea"):
-        st.session_state["deep_post_idea"] = perform_deep_research(idea)
-        st.info("📌 Insight da deep research:")
-        st.markdown(st.session_state["deep_post_idea"])
 
 
 elif action == "agenda":
