@@ -142,7 +142,6 @@ if action == "persona":
         if role not in bp_data:
             bp_data[role] = {"industries": {}}
 
-        # Se mancano i pain/kpi → prova Deep Research
         pains = [pain_1, pain_2, pain_3]
         pains = [p for p in pains if p]
         kpis = ["[Da definire]"]
@@ -150,11 +149,20 @@ if action == "persona":
         if deep and not pains:
             context_text = value_prop + "\n" + (additional_notes or "")
             pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
+
             if pain_auto:
+                st.warning("⚠️ Pain point generati automaticamente:")
+                for i, p in enumerate(pain_auto, 1):
+                    pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
                 pains = pain_auto
+
             if kpi_auto:
+                st.warning("⚠️ KPI generati automaticamente:")
+                for i, k in enumerate(kpi_auto, 1):
+                    kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
                 kpis = kpi_auto
 
+        # Salva i risultati (modificati o originali)
         bp_data[role]["industries"]["custom"] = {
             "kpi": kpis,
             "pain": pains,
