@@ -147,22 +147,19 @@ def log_buyer_persona_submission(user_id, role, industry, pain, kpi, suggestion)
 import json
 import os
 
-def load_persona_matrix_from_json(industry="automotive"):
-    path = "resources/buyer_personas_master.json"
-    if not os.path.exists(path):
-        st.warning(f"⚠️ File persona_matrix_extended.json non trovato in {path}")
-        return {}
+def load_persona_matrix_by_industry(industry):
+    """
+    Carica tutte le buyer persona per un dato settore da tutte le fonti (master, custom, live)
+    """
+    all_data = load_all_buyer_personas()
+    matrix = {}
 
-    with open(path, "r") as f:
-        full_matrix = json.load(f)
+    for role, data in all_data.items():
+        industries = data.get("industries", {})
+        if industry in industries:
+            matrix[role] = industries[industry]
 
-    # Estrae solo la parte per industry richiesta
-    persona_matrix = {}
-    for role, data in full_matrix.items():
-        if industry in data.get("industries", {}):
-            persona_matrix[role] = data["industries"][industry]
-
-    return persona_matrix
+    return matrix
 
 # === Setup: credenziali da secrets ===
 openai.api_key = st.secrets["OPENAI_API_KEY"]
