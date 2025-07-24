@@ -89,6 +89,16 @@ if st.button("✉️ Invia alla chat AI"):
         st.warning("Scrivi qualcosa prima di inviare.")
 
 manual_input = st.session_state.get("ai_notes", "")
+with st.expander("🧠 Potenzia l’input manuale"):
+    col1, col2 = st.columns(2)
+    if col1.button("🔎 Cerca sul web", key="web_manual_input"):
+        st.session_state["web_manual_input"] = perform_web_search(manual_input)
+        st.info("🔗 Risultato della ricerca web:")
+        st.markdown(st.session_state["web_manual_input"])
+    if col2.button("🧠 Deep Research", key="deep_manual_input"):
+        st.session_state["deep_manual_input"] = perform_deep_research(manual_input)
+        st.info("📌 Insight da deep research:")
+        st.markdown(st.session_state["deep_manual_input"])
 
 # Ranking & KPI
 if st.button("📊 Mostra ranking & matrice KPI"):
