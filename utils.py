@@ -738,6 +738,7 @@ def fallback_missing_fields(row):
     industry = "custom"  # puoi migliorarlo leggendo la colonna se presente
 
     persona = bp_data.get(ruolo, {}).get("industries", {}).get(industry, {})
+    ruolo_simile = None
 
     if not row.get("Pain Point") and persona.get("pain"):
         row["Pain Point"] = persona["pain"][0]
@@ -745,6 +746,39 @@ def fallback_missing_fields(row):
     if not row.get("KPI impattati") and persona.get("kpi"):
         row["KPI impattati"] = persona["kpi"][0]
 
+    
+
+     if not row.get("Pain Point"):
+        # Prova a cercare ruolo simile
+        for candidate_role, data in bp_data.items():
+            if candidate_role.lower() != ruolo.lower():
+                candidate = data.get("industries", {}).get(industry, {})
+                if candidate.get("pain"):
+                    row["Pain Point"] = candidate["pain"][0]
+                    ruolo_simile = candidate_role
+                    break
+
+    if not row.get("KPI impattati"):
+        for candidate_role, data in bp_data.items():
+            if candidate_role.lower() != ruolo.lower():
+                candidate = data.get("industries", {}).get(industry, {})
+                if candidate.get("kpi"):
+                    row["KPI impattati"] = candidate["kpi"][0]
+                    ruolo_simile = candidate_role
+                    break
+    
+
+    if ruolo_simile:
+        log_gpt_fallback(
+            tipo="Suggerimento ruolo simile",
+            ruolo=ruolo,
+            industry=industry,
+            trigger=row.get("Trigger rilevato", ""),
+            pain=row.get("Pain Point", ""),
+            kpi=row.get("KPI impattati", ""),
+            note=f"Template usato da ruolo simile: {ruolo_simile}"
+        )
+  
     return row
 
 def save_all_buyer_personas(data):
