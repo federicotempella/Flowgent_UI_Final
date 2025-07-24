@@ -138,59 +138,79 @@ if action == "persona":
         bp_data = load_all_buyer_personas()
         deep = st.session_state.get("deep_research", False)
         new_entries = {}
+        preview_roles = []
 
-    for role in [r.strip() for r in roles.split(",") if r.strip()]:
-        if role not in bp_data:
-            bp_data[role] = {"industries": {}}
+        for role in [r.strip() for r in roles.split(",") if r.strip()]:
+            if role not in bp_data:
+                bp_data[role] = {"industries": {}}
 
-        pains = [pain_1, pain_2, pain_3]
-        pains = [p for p in pains if p]
-        kpis = ["[Da definire]"]
-        auto_generated = False
+            pains = [pain_1, pain_2, pain_3]
+            pains = [p for p in pains if p]
+            kpis = ["[Da definire]"]
+            auto_generated = False
 
-        if deep and not pains:
-            context_text = value_prop + "\n" + (additional_notes or "")
-            pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
+            if deep and not pains:
+                context_text = value_prop + "\n" + (additional_notes or "")
+                pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
 
-            if pain_auto:
-                st.warning("⚠️ Pain point generati automaticamente:")
-                for i, p in enumerate(pain_auto, 1):
-                    pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
-                pains = pain_auto
-                auto_generated = True
+                if pain_auto:
+                    st.warning(f"⚠️ Pain point generati automaticamente per {role}:")
+                    for i, p in enumerate(pain_auto, 1):
+                        pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
+                    pains = pain_auto
+                    auto_generated = True
 
-            if kpi_auto:
-                st.warning("⚠️ KPI generati automaticamente:")
-                for i, k in enumerate(kpi_auto, 1):
-                    kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
-                kpis = kpi_auto
-                auto_generated = True
+                if kpi_auto:
+                    st.warning(f"⚠️ KPI generati automaticamente per {role}:")
+                    for i, k in enumerate(kpi_auto, 1):
+                        kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
+                    kpis = kpi_auto
+                    auto_generated = True
 
-        # Salva i risultati temporanei
-        new_entries[role] = {
-            "kpi": kpis,
-            "pain": pains,
-            "suggestion": value_prop
-        }
+            new_entries[role] = {
+                "kpi": kpis,
+                "pain": pains,
+                "suggestion": value_prop
+            }
+            preview_roles.append(role)
 
-    # Mostra anteprima f
+        # 👁️ Mostra anteprima
+        st.markdown("### 👁️ Preview della Buyer Persona prima del salvataggio:")
+        for role in preview_roles:
+            data = new_entries[role]
+            st.markdown(f"#### 👤 {role}")
+            st.markdown(f"- **Pain Point**: {', '.join(data['pain'])}")
+            st.markdown(f"- **KPI**: {', '.join(data['kpi'])}")
+            st.markdown(f"- **Value Proposition**: {data['suggestion']}")
 
-        # ✅ Log automatico se selezionato
-        if send_to_admin:
-            try:
-                user_id = st.session_state.get("user_id", "anonimo")
-                for role in [r.strip() for r in roles.split(",") if r.strip()]:
-                    log_buyer_persona_submission(
-                        user_id=user_id,
-                        role=role,
-                        industry="custom",
-                        pain=[pain_1, pain_2, pain_3],
-                        kpi=["[Da definire]"],
-                        suggestion=value_prop
-                    )
-                st.success("📬 Inviata all’amministratore per valutazione.")
-            except Exception as e:
-                st.warning(f"❌ Errore nel log automatico: {e}")
+        # Conferma salvataggio
+        confirm_save = st.checkbox("✅ Confermo e voglio salvare queste Buyer Persona")
+
+        if confirm_save:
+            for role in new_entries:
+                bp_data[role]["industries"]["custom"] = new_entries[role]
+            save_all_buyer_personas(bp_data)
+            st.success("✅ Buyer Persona salvata!")
+
+            # 📨 Deep Research → invio all’admin
+            if deep:
+                send_to_admin = st.checkbox("📤 Vuoi inviare questa buyer persona all’admin per migliorare il modello globale?")
+                if send_to_admin:
+                    try:
+                        user_id = st.session_state.get("user_id", "anonimo")
+                        for role in new_entries:
+                            log_buyer_persona_submission(
+                                user_id=user_id,
+                                role=role,
+                                industry="custom",
+                                pain=new_entries[role]["pain"],
+                                kpi=new_entries[role]["kpi"],
+                                suggestion=new_entries[role]["suggestion"]
+                            )
+                        st.success("📬 Inviata all’amministratore per valutazione.")
+                    except Exception as e:
+                        st.warning(f"❌ Errore nel log automatico: {e}")
+
 
 
   with st.expander("📂 Buyer Persona già salvate"):
