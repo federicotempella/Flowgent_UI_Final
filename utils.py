@@ -17,9 +17,32 @@ import pandas as pd
 import re
 # altri import se presenti...
 
-
 import openai
 
+def log_gpt_fallback(tipo, ruolo, industry, trigger, pain, kpi, note=""):
+    try:
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(service_account_info, scope)
+        client = gspread.authorize(creds)
+
+        sheet = client.open("AI_SalesBot_UI_Log").worksheet("GPT_Fallback_Log")
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        user_id = st.session_state.get("user", "anonimo")
+
+        sheet.append_row([
+            now,
+            user_id,
+            tipo,
+            ruolo,
+            industry,
+            trigger,
+            ", ".join(pain if isinstance(pain, list) else [pain]),
+            ", ".join(kpi if isinstance(kpi, list) else [kpi]),
+            note
+        ])
+    except Exception as e:
+        st.warning(f"❌ Errore nel log fallback GPT: {e}")
+        
 def perform_deep_research(company: str, role: str = "", trigger: str = "") -> str:
     queries = [
         f"{company} sito ufficiale",
