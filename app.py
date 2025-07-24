@@ -134,45 +134,97 @@ if action == "persona":
     # ✅ Checkbox per invio al modello centrale
     send_to_admin = st.checkbox("🔄 Vuoi inviare questa buyer persona per migliorare il modello?")
 
-    if st.button("💾 Salva Buyer Persona"):
-        bp_data = load_all_buyer_personas()
-        deep = st.session_state.get("deep_research", False)
-        new_entries = {}
-        preview_roles = []
+   if st.button("💾 Salva Buyer Persona"):
+    bp_data = load_all_buyer_personas()
+    deep = st.session_state.get("deep_research", False)
+    new_entries = {}
+    preview_roles = []
 
-        for role in [r.strip() for r in roles.split(",") if r.strip()]:
-            if role not in bp_data:
-                bp_data[role] = {"industries": {}}
+    # 🔍 SUGGERIMENTO RUOLI SIMILI
+    from difflib import get_close_matches
+    similar_roles = []
+    existing_roles = list(bp_data.keys())
 
-            pains = [pain_1, pain_2, pain_3]
-            pains = [p for p in pains if p]
-            kpis = ["[Da definire]"]
-            auto_generated = False
+    for role in [r.strip() for r in roles.split(",") if r.strip()]:
+        if role not in bp_data:
+            match = get_close_matches(role, existing_roles, n=1, cutoff=0.6)
+            if match:
+                similar_roles.append((role, match[0]))
 
-            if deep and not pains:
-                context_text = value_prop + "\n" + (additional_notes or "")
-                pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
+    if similar_roles:
+        st.info("📚 Abbiamo trovato dei ruoli simili già presenti. Vuoi usarli come base?")
+        for input_role, suggested_role in similar_roles:
+            if st.button(f"📋 Copia da {suggested_role} per {input_role}"):
+                source_data = bp_data[suggested_role]
+                new_entries[input_role] = {
+                    "kpi": source_data["industries"].get("custom", {}).get("kpi", ["[Da definire]"]),
+                    "pain": source_data["industries"].get("custom", {}).get("pain", ["[Da definire]"]),
+                    "suggestion": value_prop
+                }
+                st.success(f"✅ Importato da {suggested_role} per {input_role}")
 
-                if pain_auto:
-                    st.warning(f"⚠️ Pain point generati automaticamente per {role}:")
-                    for i, p in enumerate(pain_auto, 1):
-                        pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
-                    pains = pain_auto
-                    auto_generated = True
+    # 🧠 GENERAZIONE NUOVE ENTRY
+    for role in [r.strip() for r in roles.split(",") if r.strip()]:
+        if role not in bp_data:
+            bp_data[role] = {"industries": {}}
 
-                if kpi_auto:
-                    st.warning(f"⚠️ KPI generati automaticamente per {role}:")
-                    for i, k in enumerate(kpi_auto, 1):
-                        kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
-                    kpis = kpi_auto
-                    auto_generated = True
+        pains = [pain_1, pain_2, pain_3]
+        pains = [p for p in pains if p]
+        kpis = ["[Da definire]"]
+        auto_generated = False
 
-            new_entries[role] = {
-                "kpi": kpis,
-                "pain": pains,
-                "suggestion": value_prop
-            }
-            preview_roles.append(role)
+        if deep and not pains:
+            context_text = value_prop + "\n" + (additional_notes or "")
+            pain_auto, kpi_auto = generate_pain_kpi_from_context(role, "custom", context_text)
+
+            if pain_auto:
+                st.warning(f"⚠️ Pain point generati automaticamente per {role}:")
+                for i, p in enumerate(pain_auto, 1):
+                    pain_auto[i-1] = st.text_input(f"Pain auto {i}", value=p, key=f"pain_auto_{i}_{role}")
+                pains = pain_auto
+                auto_generated = True
+
+            if kpi_auto:
+                st.warning(f"⚠️ KPI generati automaticamente per {role}:")
+                for i, k in enumerate(kpi_auto, 1):
+                    kpi_auto[i-1] = st.text_input(f"KPI auto {i}", value=k, key=f"kpi_auto_{i}_{role}")
+                kpis = kpi_auto
+                auto_generated = True
+
+        new_entries[role] = {
+            "kpi": kpis,
+            "pain": pains,
+            "suggestion": value_prop
+        }
+        preview_roles.append(role)
+
+    # ⚠️ FALLBACK se KPI o Pain mancanti
+    validation_errors = []
+    for role, data in new_entries.items():
+        if not data["pain"] or all(p.strip() == "" for p in data["pain"]):
+            validation_errors.append(f"Pain mancante per il ruolo {role}")
+        if not data["kpi"] or all(k.strip() == "" or k.strip() == "[Da definire]" for k in data["kpi"]):
+            validation_errors.append(f"KPI mancante per il ruolo {role}")
+
+    if validation_errors:
+        st.warning("⚠️ Alcuni dati sembrano incompleti. Puoi modificarli manualmente oppure completare con AI.")
+        for err in validation_errors:
+            st.markdown(f"- {err}")
+
+        if st.button("💡 Completa automaticamente i campi mancanti con GPT"):
+            for role, data in new_entries.items():
+                if not data["pain"] or all(p.strip() == "" for p in data["pain"]):
+                    context_text = value_prop + "\n" + (additional_notes or "")
+                    pains_gpt, _ = generate_pain_kpi_from_context(role, "custom", context_text)
+                    if pains_gpt:
+                        st.info(f"Pain generati per {role}: {pains_gpt}")
+                        data["pain"] = pains_gpt
+                if not data["kpi"] or all(k.strip() == "" or k.strip() == "[Da definire]" for k in data["kpi"]):
+                    _, kpis_gpt = generate_pain_kpi_from_context(role, "custom", context_text)
+                    if kpis_gpt:
+                        st.info(f"KPI generati per {role}: {kpis_gpt}")
+                        data["kpi"] = kpis_gpt
+
 
         # 👁️ Mostra anteprima
         st.markdown("### 👁️ Preview della Buyer Persona prima del salvataggio:")
