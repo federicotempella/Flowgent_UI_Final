@@ -7,6 +7,8 @@ import openai
 import datetime
 import gspread
 import fitz
+import requests
+from bs4 import BeautifulSoup
 from oauth2client.service_account import ServiceAccountCredentials
 from PyPDF2 import PdfReader
 from date import datetime
