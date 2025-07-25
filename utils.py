@@ -557,6 +557,17 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
         name = row.get("Name", "Sconosciuto")
         company = row.get("Company", "N/A")
         role = row.get("Role", "N/A")
+        # 🧠 Richiama Deep Research (solo se attivo in sessione)
+        deep_active = st.session_state.get("deep_research", False)
+        deep_notes = ""
+        
+        if deep_active and company != "N/A":
+            try:
+                deep_notes = perform_deep_research(company=company, role=role)
+            except Exception as e:
+                deep_notes = f"Errore deep research: {e}"
+
+
         trigger_cell = row.get("Triggers", "")
         found_triggers = []
 
