@@ -392,8 +392,10 @@ if action == "persona":
         st.experimental_rerun()
 
 elif action == "simulate":
+    st.subheader("🤖 Simulatore GPT")
     user_input = st.text_area("Scrivi un prompt...")
     if user_input:
+         # Espandi opzioni di ricerca e approfondimento
         with st.expander("🧠 Stimola l’analisi GPT"):
             col1, col2 = st.columns(2)
             if col1.button("🔎 Cerca sul web", key="web_user_input"):
@@ -406,6 +408,7 @@ elif action == "simulate":
                 st.markdown(st.session_state["deep_user_input"])
 
 elif action == "linkedin_post":
+    st.subheader("📝 Generatore di Post LinkedIn")
     idea = st.text_input("Idea o tema del post:")
     if idea:
         with st.expander("🧠 Arricchisci l’idea del post"):
@@ -418,7 +421,26 @@ elif action == "linkedin_post":
                 st.session_state["deep_post_idea"] = perform_deep_research(idea)
                 st.info("📌 Insight da deep research:")
                 st.markdown(st.session_state["deep_post_idea"])
-    generate_post()
+        
+        # Scelta del tono e generazione del post
+        tone = st.selectbox("Tono", ["Professionale", "Informale", "Provocatorio"])
+        if st.button("Genera post"):
+            # Chiamata GPT per generare il contenuto del post con il tono scelto
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": f"Genera un post LinkedIn in tono {tone}."},
+                    {"role": "user", "content": idea}
+                ],
+                temperature=0.8,
+            )
+            post = response.choices[0].message.content.strip()
+            st.text_area("Post generato", post, height=200)
+            if st.button("💾 Salva in libreria"):
+                save_to_library("Post LinkedIn", post)
+                st.success("✅ Post salvato nella tua libreria.")
+    else:
+        st.info("Inserisci un'idea per generare il post.")
 
 
 elif action == "agenda":
