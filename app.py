@@ -112,9 +112,8 @@ nav_choice = st.sidebar.radio("Vai a…", [
 ], key="nav_choice")
 
 # --- ROUTING PRINCIPALE ---
-if action == "persona":
+elif action == "persona":
     st.subheader("👤 Crea o modifica una Buyer Persona")
-
     st.markdown("#### 1️⃣ Cosa fa la tua azienda e qual è la tua value proposition?")
     value_prop = st.text_area("Value Proposition", placeholder="Es: Offriamo una piattaforma BIS per integrare partner EDI/API senza sviluppi custom...")
     with st.expander("🧠 Potenzia la tua proposta"):
@@ -127,7 +126,6 @@ if action == "persona":
             st.session_state["deep_value_prop"] = perform_deep_research(value_prop)
             st.info("📌 Insight da deep research:")
             st.markdown(st.session_state["deep_value_prop"])
-
 
     st.markdown("#### 2️⃣ Quali sono i 3 pain point principali che risolvi?")
     pain_1 = st.text_input("Pain Point 1")
@@ -150,7 +148,6 @@ if action == "persona":
             st.session_state["deep_notes"] = perform_deep_research(additional_notes)
             st.info("📌 Insight da deep research:")
             st.markdown(st.session_state["deep_notes"])
-
 
     # ✅ Checkbox per invio al modello centrale
     send_to_admin = st.checkbox("🔄 Vuoi inviare questa buyer persona per migliorare il modello?")
