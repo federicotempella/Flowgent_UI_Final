@@ -49,7 +49,7 @@ def perform_deep_research(company: str, role: str = "", trigger: str = "") -> st
         f"{company} stack tecnologico o software in uso",
         f"{company} offerte lavoro {role}" if role else f"{company} offerte lavoro",
         f"{company} notizie recenti integrazione o progetti digitali"
-    ]
+    ] 
 
     results = []
     for query in queries:
