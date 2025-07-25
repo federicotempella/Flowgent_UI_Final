@@ -3,7 +3,7 @@ import pandas as pd
 import io
 from docx import Document
 from io import BytesIO
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 from utils import (
     parse_excel_file,
