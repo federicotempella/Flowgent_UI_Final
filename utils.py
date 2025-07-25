@@ -616,7 +616,8 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
             "Score": score,
             "KPI consigliati": kpi_str,
             "Framework suggerito": framework,
-            "Suggerimento di messaggio": suggestion
+            "Suggerimento di messaggio": suggestion,
+            "Note Deep": deep_notes
         })
 
     return pd.DataFrame(results)
