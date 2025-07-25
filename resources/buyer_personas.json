@@ -1,4 +1,12 @@
 def save_user_buyer_personas(data: dict):
+    # Aggiunta automatica dei nuovi campi se mancanti
+    for persona in data:
+        if "symptom" not in persona:
+            persona["symptom"] = []
+        if "damage" not in persona:
+            persona["damage"] = []
+
     with open("resources/buyer_personas.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
 
