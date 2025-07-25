@@ -156,6 +156,18 @@ elif action == "persona":
     bp_data = load_all_buyer_personas()
     deep = st.session_state.get("deep_research", False)
     new_entries = {}
+    
+    # 🧠 Estrazione symptom/damage da PDF o DOCX se disponibile
+    symptoms, damages = [], []
+
+    if deep and uploaded_file:
+        if uploaded_file.name.endswith(".pdf"):
+            pdf_text = parse_pdf_files(uploaded_file)
+            symptoms, damages = extract_symptom_and_damage_from_text(pdf_text)
+        elif uploaded_file.name.endswith(".docx"):
+            doc = Document(uploaded_file)
+            text = "\n".join([p.text for p in doc.paragraphs])
+            symptoms, damages = extract_symptom_and_damage_from_text(text)
     preview_roles = []
 
     # 🔍 SUGGERIMENTO RUOLI SIMILI
@@ -177,7 +189,10 @@ elif action == "persona":
                 new_entries[input_role] = {
                     "kpi": source_data["industries"].get("custom", {}).get("kpi", ["[Da definire]"]),
                     "pain": source_data["industries"].get("custom", {}).get("pain", ["[Da definire]"]),
-                    "suggestion": value_prop
+                    "suggestion": value_prop,
+                    "symptom": symptoms if symptoms else source_data.get("symptom", []),
+                    "damage": damages if damages else source_data.get("damage", [])
+
                 }
                 st.success(f"✅ Importato da {suggested_role} per {input_role}")
 
