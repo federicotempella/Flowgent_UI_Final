@@ -45,6 +45,9 @@ def log_gpt_fallback(tipo, ruolo, industry, trigger, pain, kpi, note=""):
     except Exception as e:
         st.warning(f"❌ Errore nel log fallback GPT: {e}")
         
+import requests
+from bs4 import BeautifulSoup
+
 def perform_deep_research(company: str, role: str = "", trigger: str = "") -> str:
     queries = [
         f"{company} sito ufficiale",
@@ -63,6 +66,25 @@ def perform_deep_research(company: str, role: str = "", trigger: str = "") -> st
             queries.append(f"{company} progetti intelligenza artificiale")
 
     results = []
+
+    # 🔍 1. Esegui una vera ricerca web (solo sul trigger, se presente)
+    if trigger:
+        try:
+            search_query = f"{company} {trigger}".replace(" ", "+")
+            headers = {"User-Agent": "Mozilla/5.0"}
+            res = requests.get(f"https://www.bing.com/search?q={search_query}", headers=headers, timeout=5)
+            if res.status_code == 200:
+                soup = BeautifulSoup(res.text, "html.parser")
+                first_result = soup.find("li", class_="b_algo")
+                if first_result:
+                    title = first_result.find("h2").get_text(strip=True)
+                    snippet = first_result.find("p").get_text(strip=True)
+                    link = first_result.find("a")["href"]
+                    results.append(f"🌐 Approfondimento su “{trigger}” trovato online:\n🔗 {title}\n🧠 {snippet}\n🔗 {link}")
+        except Exception as e:
+            results.append(f"🌐 Errore nella ricerca web reale: {e}")
+
+    # 🤖 2. Esegui ricerche simulate via GPT-4o per le altre query
     for query in queries:
         try:
             search_response = openai.ChatCompletion.create(
@@ -79,7 +101,7 @@ Dammi un estratto utile e sintetico (max 2 frasi) che aiuti a capire se l’azie
         except Exception as e:
             results.append(f"❌ Errore su {query}: {e}")
 
-    return "\n".join(results)
+    return "\n\n".join(results)
 
 def generate_pain_from_trigger(trigger, ruolo):
     prompt = f"""Mi dai un esempio di pain point che potrebbe avere un {ruolo} se nota questo trigger: {trigger}? Rispondi in 1 frase."""
