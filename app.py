@@ -31,7 +31,8 @@ from utils import (
     buyer_personas.json,
     buyer_personas_master.json,
     frameworks_master.json,
-    parse_persona_documents
+    parse_persona_documents,
+    perform_deep_research
 
 )
 
