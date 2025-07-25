@@ -46,21 +46,34 @@ def log_gpt_fallback(tipo, ruolo, industry, trigger, pain, kpi, note=""):
 def perform_deep_research(company: str, role: str = "", trigger: str = "") -> str:
     queries = [
         f"{company} sito ufficiale",
-        f"{company} stack tecnologico o software in uso",
+        f"{company} tecnologia o software in uso",
+        f"{company} progetti digitali recenti o roadmap innovazione",
         f"{company} offerte lavoro {role}" if role else f"{company} offerte lavoro",
-        f"{company} notizie recenti integrazione o progetti digitali"
-    ] 
+    ]
+
+    # Trigger-based enrichment
+    if trigger:
+        if "ERP" in trigger or "migrazione" in trigger.lower():
+            queries.append(f"{company} ERP in uso o migrazione SAP")
+        elif "customer portal" in trigger.lower() or "self-service":
+            queries.append(f"{company} portale clienti o canale digitale B2B")
+        elif "AI" in trigger.lower() or "machine learning" in trigger.lower():
+            queries.append(f"{company} progetti intelligenza artificiale")
 
     results = []
     for query in queries:
         try:
             search_response = openai.ChatCompletion.create(
                 model="gpt-4o",
-                messages=[{"role": "user", "content": f"Cerca online: {query}. Dammi un estratto utile per capire cosa accade in azienda. Massimo 2 frasi."}],
+                messages=[{
+                    "role": "user",
+                    "content": f"""Cerca online: {query}.
+Dammi un estratto utile e sintetico (max 2 frasi) che aiuti a capire se l’azienda ha iniziative in corso o evoluzioni rilevanti."""
+                }],
                 temperature=0.4,
             )
             answer = search_response.choices[0].message.content.strip()
-            results.append(f"🔎 {query} → {answer}")
+            results.append(f"🔍 {query} → {answer}")
         except Exception as e:
             results.append(f"❌ Errore su {query}: {e}")
 
