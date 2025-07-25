@@ -276,6 +276,8 @@ elif action == "persona":
             st.markdown(f"#### 👤 {role}")
             st.markdown(f"- **Pain Point**: {', '.join(data['pain'])}")
             st.markdown(f"- **KPI**: {', '.join(data['kpi'])}")
+            st.markdown(f"- **Symptom**: {', '.join(data.get('symptom', [])) or '❌ Non estratti'}")
+            st.markdown(f"- **Damage**: {', '.join(data.get('damage', [])) or '❌ Non estratti'}")
             st.markdown(f"- **Value Proposition**: {data['suggestion']}")
 
         # Conferma salvataggio
