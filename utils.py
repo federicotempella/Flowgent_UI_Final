@@ -585,29 +585,28 @@ def load_frameworks():
             return json.load(f)
     return {}
 
-def generate_personalized_messages(ranked_df, framework_override=None):
+def generate_personalized_messages(ranked_df, frameworks_all, framework_override=None):
+    import openai
+    import pandas as pd
+
     messages = []
-    frameworks_all = load_frameworks()
 
     for _, row in ranked_df.iterrows():
         row = fallback_missing_fields(row.copy())
-        
+
         nome = row.get("Nome", "")
         azienda = row.get("Azienda", "")
         ruolo = row.get("Ruolo", "")
         trigger = row.get("Trigger rilevato", "")
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
-        
+        industry = row.get("Settore", "custom")
+
         # ➕ Aggiunta Deep Research se attiva
         deep = st.session_state.get("deep_research", False)
         extra_notes = ""
         if deep and azienda:
-           extra_notes = perform_deep_research(company=azienda, role=ruolo, trigger=trigger)
-
-        
-        framework_id = row.get("Framework", "")
-        industry = row.get("Settore", "custom")  # se disponibile
+            extra_notes = perform_deep_research(company=azienda, role=ruolo, trigger=trigger)
 
         # 🔄 Se mancanti, prova a completarli con GPT
         if not pain and trigger and ruolo:
@@ -615,32 +614,43 @@ def generate_personalized_messages(ranked_df, framework_override=None):
         if not kpi and trigger and ruolo:
             kpi = generate_kpi_from_trigger(trigger, ruolo)
 
-        log_gpt_fallback(
-            tipo="Completamento GPT",
-            ruolo=ruolo,
-            industry="custom",
-            trigger=trigger,
-            pain=pain,
-            kpi=kpi,
-            note="Completato perché mancava pain/kpi nella riga"
-        )
+        # 📋 Logging fallback GPT
+        if not row.get("Pain Point") or not row.get("KPI impattati"):
+            log_gpt_fallback(
+                tipo="Completamento GPT",
+                ruolo=ruolo,
+                industry=industry,
+                trigger=trigger,
+                pain=pain,
+                kpi=kpi,
+                note="Completato perché mancava pain/kpi nella riga"
+            )
 
-        # Override framework se l'utente ha selezionato uno
+        # 🔁 Gestione framework override
+        framework_id = row.get("Framework", "")
         if framework_override and framework_override != "Auto (da score)":
             framework_id = framework_override
 
         selected_fw = frameworks_all.get(framework_id)
         if not selected_fw:
+            # Tentativo fallback da industry
+            fallback_fw = get_default_framework_by_industry(industry)
+            if fallback_fw:
+                selected_fw = fallback_fw
+                framework_id = fallback_fw.get("id", "TIPPS")
+
+        if not selected_fw:
+            # Estrema sicurezza: framework minimale
             structure_text = "TIPPS: Trigger, Issue, Positioning, Proof, Step"
             framework_name = framework_id
             description = ""
         else:
             structure = selected_fw.get("structure", selected_fw.get("rules", []))
             structure_text = "\n".join(f"- {s}" for s in structure)
-            framework_name = selected_fw["name"]
-            description = selected_fw["description"]
+            framework_name = selected_fw.get("name", framework_id)
+            description = selected_fw.get("description", "")
 
-        # Componi PROMPT per GPT
+        # ✍️ Prompt
         prompt = f"""Scrivi un messaggio di sales outbound per LinkedIn o email basato su questo contesto:
 
 📘 Framework: {framework_name}
@@ -660,9 +670,11 @@ def generate_personalized_messages(ranked_df, framework_override=None):
 📚 Approfondimenti aggiuntivi:
 {extra_notes}
 
-Obiettivo: ottenere risposta o apertura. Tono diretto, rilevante e professionale.
-Lo stile deve essere sintetico, rilevante e con un chiaro payoff
-Evita frasi generiche. Concludi con una call-to-action soft.
+🎯 Obiettivo: ottenere risposta o apertura.
+🗣️ Tono: diretto, rilevante e professionale.
+✂️ Linguaggio: sintetico, rilevante, payoff chiaro.
+❌ Evita frasi generiche.
+✅ Concludi con una call-to-action soft.
 """
 
         try:
@@ -683,6 +695,7 @@ Evita frasi generiche. Concludi con una call-to-action soft.
         })
 
     return pd.DataFrame(messages)
+
 
 # utils.py
 
