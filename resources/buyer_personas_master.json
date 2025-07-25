@@ -6,6 +6,14 @@
           "Sistemi legacy che rallentano l'integrazione dei partner",
           "Difficoltà nel migrare verso architetture cloud-native",
           "Mancanza di visibilità centralizzata tra filiali e HQ"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "IT system uptime",
@@ -19,6 +27,14 @@
           "Processi frammentati tra ERP, operations e supply",
           "Sicurezza e compliance difficili da garantire",
           "Integrazione lenta di partner regolati"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "SLA IT rispettati",
@@ -36,6 +52,14 @@
           "Troppi touchpoint disallineati nel customer journey",
           "Integrazioni EDI/API frammentate tra fisico e digitale",
           "Tempi lunghi per attivare nuovi canali o partner"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "Time to market canali digitali",
@@ -49,6 +73,14 @@
           "Errori EDI frequenti",
           "Difficoltà nel supportare requisiti specifici dei retailer",
           "Integrazione rigida con sistemi logistici"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "EDI success rate",
@@ -66,6 +98,14 @@
           "Lead time elevati",
           "Gestione manuale delle eccezioni",
           "Mancanza di visibilità sullo stato spedizioni"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "On-time delivery",
@@ -83,6 +123,14 @@
           "Mantenere i mapping aggiornati per ogni retailer",
           "Eccezioni EDI non tracciate",
           "Dipendenza da fornitori esterni per ogni modifica"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "EDI automation rate",
@@ -100,6 +148,14 @@
           "Costi di integrazione ricorrenti e difficili da stimare",
           "Dipendenza da troppi fornitori esterni",
           "Mancanza di visibilità sui rischi IT e operativi"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "TCO infrastruttura IT",
@@ -117,6 +173,14 @@
           "Mancanza di tracciabilità in tempo reale",
           "Complessità nel gestire i flussi documentali con i clienti",
           "Tempi lunghi di onboarding per nuovi committenti"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "POD time",
@@ -130,6 +194,14 @@
           "Dipendenza da email per l'invio di documenti",
           "Integrazione eterogenea con spedizionieri",
           "Errori nei BL e tempistiche doganali"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "Document accuracy",
@@ -147,6 +219,14 @@
           "Disallineamento tra canali fisici e digitali",
           "Errori operativi nella gestione degli stock multicanale",
           "Attivazione lenta di nuove promozioni cross-store"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "Stock accuracy",
@@ -164,6 +244,14 @@
           "Ritardi nella gestione degli ordini clienti",
           "Errori nei dati di consegna",
           "Mancanza di visibilità sui flussi di ordine-fattura"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "Customer satisfaction",
@@ -181,6 +269,14 @@
           "Integrazione difficoltosa con ERP cliente (es. SAP)",
           "Lentezza nel mappare i processi tra ERP e flussi EDI",
           "Dipendenza da IT esterni per ogni sviluppo"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "Tempo medio di implementazione",
@@ -198,6 +294,14 @@
           "Ordini incompleti o non confermati in tempo",
           "Difficoltà a integrare fornitori piccoli o esteri",
           "Ritardi causati da errori nei PO"
+          ],
+        "symptom": [
+          "...",
+          "..."
+        ],
+        "damage": [
+          "...",
+          "..."
         ],
         "kpi": [
           "PO accuracy",
