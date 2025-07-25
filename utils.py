@@ -968,3 +968,33 @@ def parse_persona_documents(directory_path: str, personas_dict: dict) -> dict:
             continue  # (Rimuovere o sostituire con la logica di parsing AI per PDF)
     return personas_dict
 
+from docx import Document
+
+def extract_symptom_and_damage_from_text(text: str) -> tuple[list[str], list[str]]:
+    """Estrae symptom e damage dal testo libero."""
+    symptoms, damages = [], []
+    if not text:
+        return symptoms, damages
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Estrai dai seguenti appunti i sintomi (indizi del problema) e i danni (costi, rallentamenti, perdite)."},
+                {"role": "user", "content": text}
+            ],
+            temperature=0.4,
+        )
+        answer = response.choices[0].message.content.strip()
+        blocks = answer.split("\n")
+        for line in blocks:
+            if line.lower().startswith("symptom") or "sintomi" in line.lower():
+                symptoms = [x.strip("•- ") for x in line.split(":")[1].split(",")]
+            elif line.lower().startswith("damage") or "danno" in line.lower():
+                damages = [x.strip("•- ") for x in line.split(":")[1].split(",")]
+    except Exception as e:
+        print(f"[⚠️] Errore estrazione symptom/damage: {e}")
+
+    return symptoms, damages
+
+
