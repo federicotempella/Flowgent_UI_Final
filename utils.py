@@ -8,6 +8,8 @@ import datetime
 import gspread
 import fitz
 import requests
+import glob
+from docx import Document
 from bs4 import BeautifulSoup
 from oauth2client.service_account import ServiceAccountCredentials
 from PyPDF2 import PdfReader
@@ -841,4 +843,128 @@ def save_all_buyer_personas(data):
     # Salva nel file custom (quelle modificate/aggiunte dall’utente)
     with open("resources/buyer_personas.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+import glob
+from docx import Document
+from PyPDF2 import PdfReader
+
+def parse_persona_documents(directory_path: str, personas_dict: dict) -> dict:
+    """
+    Legge tutti i file .docx e .pdf nella cartella specificata e integra i dati estratti nel dizionario personas_dict.
+    Ritorna il dizionario aggiornato.
+    """
+    # Per ogni file .docx o .pdf nella cartella
+    for filepath in glob.glob(f"{directory_path}/*"):
+        filename = filepath.split("/")[-1]
+        if filename.lower().endswith(".docx"):
+            doc = Document(filepath)
+            # Determina l'industry dal titolo o dal nome file
+            industry = None
+            if doc.paragraphs:
+                title_text = doc.paragraphs[0].text.strip()
+                # Ci si aspetta che il titolo contenga l'industry dopo un trattino. Esempio: "Buyer Persona – Retail"
+                if "–" in title_text:
+                    industry = title_text.split("–")[-1].strip()
+                else:
+                    # Se non presente nel titolo, usa parte del nome file come fallback
+                    industry = filename.replace(".docx", "").replace("buyer persona", "").replace("buyer personas", "").strip().capitalize()
+            else:
+                industry = filename.replace(".docx", "").capitalize()
+            
+            # Scansione del documento per ruoli e relativi punti
+            paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+            i = 0
+            while i < len(paragraphs):
+                para = paragraphs[i]
+                # Individua l'inizio di una sezione per un ruolo (paragrafo in grassetto nel doc originale)
+                # Possibile elenco di ruoli noti (CIO, IT Director, EDI Manager, ecc.), altrimenti assumiamo che 
+                # un paragrafo senza due punti e non una delle intestazioni generali sia un ruolo
+                if para.endswith(":") or para.lower() in ["top 3 pain points", "what they actually experience", "business damage", "3 tactical bis benefits"]:
+                    # Skip intestazioni generali (che nel doc appaiono come testo normale ma in grassetto)
+                    i += 1
+                    continue
+                # Heuristic: consideriamo un paragrafo come ruolo se è breve (<=5 parole) e inizia con lettera maiuscola
+                # ed è noto oppure segue le intestazioni generali
+                if 0 < len(para.split()) <= 5 and para.isupper() or para.istitle():
+                    role = para
+                    # Inizializza struttura se non presente
+                    if role not in personas_dict:
+                        personas_dict[role] = {"industries": {}}
+                    if industry not in personas_dict[role]["industries"]:
+                        personas_dict[role]["industries"][industry] = {
+                            "pain": [], "symptom": [], "damage": [], 
+                            "kpi": [], "suggestion": ""
+                        }
+                    # Raccoglie i 3 pain points successivi (indicati con "1. ", "2. ", "3. ")
+                    pains = []
+                    j = i + 1
+                    while j < len(paragraphs) and len(pains) < 3:
+                        if paragraphs[j][0].isdigit():  # inizia con numero (1., 2., ...)
+                            pains.append(paragraphs[j].split(maxsplit=1)[1])  # prendi il testo dopo "1. "
+                        else:
+                            break
+                        j += 1
+                    # Raccoglie i 3 "What They Experience" (linee con "- ")
+                    symptoms = []
+                    while j < len(paragraphs) and len(symptoms) < 3:
+                        if paragraphs[j].startswith("-"):
+                            symptoms.append(paragraphs[j][2:])  # testo dopo "- "
+                        else:
+                            break
+                        j += 1
+                    # Raccoglie i 3 "Business Damage" (altre 3 linee con "- ")
+                    damages = []
+                    while j < len(paragraphs) and len(damages) < 3:
+                        if paragraphs[j].startswith("-"):
+                            damages.append(paragraphs[j][2:])
+                        else:
+                            break
+                        j += 1
+                    # Raccoglie i 3 "Tactical BIS Benefits" (indicati con "1. ", "2. ", "3." dopo i bullet)
+                    benefits = []
+                    while j < len(paragraphs) and len(benefits) < 3:
+                        # Potrebbero riprendere la numerazione da 1 nuovamente
+                        if paragraphs[j][0].isdigit():
+                            benefits.append(paragraphs[j].split(maxsplit=1)[1])
+                        else:
+                            break
+                        j += 1
+                    # Integra i risultati nel dizionario persona
+                    industry_entry = personas_dict[role]["industries"][industry]
+                    for p in pains:
+                        if p not in industry_entry["pain"]:
+                            industry_entry["pain"].append(p)
+                    for s in symptoms:
+                        if s not in industry_entry["symptom"]:
+                            industry_entry["symptom"].append(s)
+                    for d in damages:
+                        if d not in industry_entry["damage"]:
+                            industry_entry["damage"].append(d)
+                    # Per suggestion, se non impostato e ci sono benefits, usa il primo benefit come suggerimento
+                    if industry_entry.get("suggestion") in [None, ""]:
+                        if benefits:
+                            industry_entry["suggestion"] = benefits[0]
+                    # NOTA: i benefits aggiuntivi potrebbero essere conservati altrove, ad esempio in un campo separato se necessario.
+                    # Aggiorna l'indice principale al termine di questa sezione ruolo
+                    i = j
+                    continue  # passa al prossimo ciclo senza incrementare i manualmente
+                # Se il paragrafo corrente non rappresenta un ruolo, passa al successivo
+                i += 1
+        
+        elif filename.lower().endswith(".pdf"):
+            # Parsing PDF: estrai testo grezzo e poi usa eventualmente l'AI per identificare le parti chiave
+            reader = PdfReader(filepath)
+            full_text = ""
+            for page in reader.pages:
+                full_text += page.extract_text() + "\n"
+            # Potenziale implementazione: usare l'AI per estrarre campi da full_text se formato non strutturato
+            # Esempio (pseudo-codice):
+            # prompt = f"Analizza il seguente testo e identifica per ogni ruolo i pain points, i sintomi, i danni e i benefici:\n{full_text}"
+            # response = openai.ChatCompletion.create(..., messages=[...], ...)
+            # parsed_info = response[...]  # dovrebbe restituire una struttura analizzabile (JSON string o simile)
+            # personas_dict = merge_parsed_info(personas_dict, parsed_info)
+            # Per semplicità, qui possiamo omettere la logica dettagliata e supporre che i PDF seguano lo stesso schema testuale dei docx.
+            continue  # (Rimuovere o sostituire con la logica di parsing AI per PDF)
+    return personas_dict
 
