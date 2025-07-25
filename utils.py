@@ -829,6 +829,16 @@ def fallback_missing_fields(row):
     return row
 
 def save_all_buyer_personas(data):
-    # Salva solo nel file custom (quelle modificate/aggiunte dall’utente)
-    with open(custom_file, "w") as f:
-        json.dump(data, f, indent=2)
+    # Aggiunge automaticamente i nuovi campi se mancanti
+    for ruolo, role_data in data.items():
+        industries = role_data.get("industries", {})
+        for industry, industry_data in industries.items():
+            if "symptom" not in industry_data:
+                industry_data["symptom"] = []
+            if "damage" not in industry_data:
+                industry_data["damage"] = []
+
+    # Salva nel file custom (quelle modificate/aggiunte dall’utente)
+    with open("resources/buyer_personas.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
