@@ -404,6 +404,25 @@ elif action == "simulate":
                 st.info("📌 Insight da deep research:")
                 st.markdown(st.session_state["deep_user_input"])
 
+        # Pulsante opzionale per generare una risposta GPT
+        if st.button("✉️ Invia"):
+            if user_input.strip() == "":
+                st.warning("Scrivi un prompt prima di inviare.")
+            else:
+                with st.spinner("💬 Generazione risposta GPT..."):
+                    try:
+                        response = openai.ChatCompletion.create(
+                            model="gpt-4o",
+                            messages=[{"role": "user", "content": user_input}],
+                            temperature=0.6
+                        )
+                        gpt_reply = response.choices[0].message.content.strip()
+                        st.markdown("### 🧠 Risposta GPT")
+                        st.write(gpt_reply)
+                    except Exception as e:
+                        st.error(f"Errore nella generazione: {e}")            
+                
+
 elif action == "linkedin_post":
     st.subheader("📝 Generatore di Post LinkedIn")
     idea = st.text_input("Idea o tema del post:")
@@ -438,6 +457,25 @@ elif action == "linkedin_post":
                 st.success("✅ Post salvato nella tua libreria.")
     else:
         st.info("Inserisci un'idea per generare il post.")
+
+
+    # Pulsante opzionale per generare una risposta GPT
+        if st.button("✉️ Invia"):
+            if user_input.strip() == "":
+                st.warning("Scrivi un prompt prima di inviare.")
+            else:
+                with st.spinner("💬 Generazione risposta GPT..."):
+                    try:
+                        response = openai.ChatCompletion.create(
+                            model="gpt-4o",
+                            messages=[{"role": "user", "content": user_input}],
+                            temperature=0.6
+                        )
+                        gpt_reply = response.choices[0].message.content.strip()
+                        st.markdown("### 🧠 Risposta GPT")
+                        st.write(gpt_reply)
+                    except Exception as e:
+                        st.error(f"Errore nella generazione: {e}")
 
 
 elif action == "agenda":
