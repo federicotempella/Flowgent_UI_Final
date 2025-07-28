@@ -684,31 +684,38 @@ def generate_personalized_messages(ranked_df, framework_override=None, framework
         industry = row.get("Settore", "custom")
         
         context = f"""Il contatto {name} lavora in {company} come {role}.
-        Trigger rilevati: {triggers}.
-        Insight aggiuntivi da ricerche online:
-        {note_deep}
-        """
+    Trigger rilevati: {triggers}.
+    Insight aggiuntivi da ricerche online:
+    {note_deep}
+    """
         # Aggiunta sintomo se disponibile
         symptom = row.get("Symptom", "")
         if symptom:
             context += f"\nSintomi osservati: {symptom}"
 
         prompt = f"""Agisci come un SDR esperto.
-    Usa il framework {framework} per scrivere un primo messaggio di contatto.
-    Contesto:
-    {context}
-    Scrivi in modo sintetico e d’impatto."""
+Usa il framework {framework} per scrivere un primo messaggio di contatto.
+Contesto:
+{context}
+Scrivi in modo sintetico e d’impatto."""
 
     # Chiamata GPT vera
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.6,
-    )
-    message = response.choices[0].message.content.strip()
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.6,
+        )
+        message = response.choices[0].message.content.strip()
+        messages.append({
+            "Name": name,
+            "Company": company,
+            "Role": role,
+            "Trigger combinato": triggers,
+            "Message": message,
+            "Framework": framework
+        })
         
-        # ➕ Aggiunta Note Deep dal ranking (se presente)
-        extra_notes = row.get("Note Deep", "")
+    return pd.DataFrame(messages)
 
         # 🔄 Se alcuni campi mancano, prova a completarli con GPT o dati persona
         if not pain and trigger and ruolo:
