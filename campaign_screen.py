@@ -106,10 +106,20 @@ if st.button("📊 Mostra ranking & matrice KPI"):
     if df is not None:
         ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
         if not ranked_df.empty:
-            st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
-            st.dataframe(ranked_df)
-            st.session_state["ranked_df"] = ranked_df
-            st.success("✔️ Analisi completata.")
+            if not ranked_df.empty:
+    st.dataframe(ranked_df[[
+        "Name", "Company", "Role", "Trigger combinato", 
+        "Score", "KPI consigliati", "Framework suggerito", 
+        "Note Deep"
+    ]])
+    st.markdown("\n")
+    st.download_button(
+        "📥 Scarica risultati", 
+        data=ranked_df.to_csv(index=False).encode("utf-8"), 
+        file_name="risultati_campagna.csv", 
+        mime="text/csv"
+    )
+
         else:
             st.info("Nessun trigger noto trovato.")
     else:
