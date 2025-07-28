@@ -130,28 +130,54 @@ with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
         df = st.session_state.get("ranked_df")
         if df is not None:
             with st.spinner("🔄 Generazione messaggi in corso..."):
-                selected_framework = st.selectbox("📐 Scegli un framework", ["Auto (da score)", "TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"])
-                output_df = generate_personalized_messages(df, framework_override=selected_framework)
-                st.session_state["personalized_messages"] = output_df
-                st.success("✔️ Messaggi generati con successo!")
+                selected_framework = st.selectbox(
+                    "📐 Scegli un framework",
+                    ["Auto (da score)", "TIPPS", "TIPPS + COI", "Poke the Bear", "Harris NEAT"]
+                )
+                output_df = generate_personalized_messages(
+                    ranked_df=df,
+                    framework_override=selected_framework
+                )
 
+                # ✅ Salvataggio nella sessione
+                st.session_state["personalized_messages"] = output_df
+                st.success("✔️ Messaggi generati e salvati nella sessione")
+
+                # ✅ Esportazione CSV
+                csv_data = output_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    "📥 Scarica messaggi generati (CSV)",
+                    data=csv_data,
+                    file_name="messaggi_personalizzati.csv",
+                    mime="text/csv"
+                )
+
+# ✅ Visualizzazione e modifica dei messaggi generati
 output_df = st.session_state.get("personalized_messages")
 if output_df is not None:
     st.subheader("📩 Messaggi personalizzati")
     for i, row in output_df.iterrows():
         st.markdown(f"##### 🎯 [{row['Nome']} – {row['Azienda']} – {row['Ruolo']}]")
-        new_msg = st.text_area(f"✏️ Modifica messaggio", value=row['Messaggio generato'], key=f"msg_edit_{i}")
+        new_msg = st.text_area(
+            f"✏️ Modifica messaggio", 
+            value=row.get("Messaggio generato", ""), 
+            key=f"msg_edit_{i}"
+        )
         output_df.at[i, "Messaggio generato"] = new_msg
 
+    # ✅ Esportazione XLSX
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
         output_df.to_excel(writer, index=False, sheet_name="Messaggi")
-    st.download_button("📥 Scarica messaggi", data=buffer.getvalue(), file_name="messaggi_personalizzati.xlsx")
+    st.download_button(
+        "📥 Scarica messaggi (Excel)",
+        data=buffer.getvalue(),
+        file_name="messaggi_personalizzati.xlsx"
+    )
 
+    # ✅ Pulsante salvataggio futuro (da implementare)
     if st.button("💾 Salva tutti in libreria"):
-        for _, row in output_df.iterrows():
-            save_to_library("Messaggio personalizzato", row["Messaggio generato"])
-        st.success("📚 Messaggi salvati nella libreria!")
+        st.info("🔧 Funzione in sviluppo. Qui andrà il salvataggio definitivo nella libreria dei messaggi.")
 
 # Step 4: Sequenza multicanale
 with st.expander("🧩 4. Sequenza multicanale completa", expanded=False):
