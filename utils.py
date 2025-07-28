@@ -664,7 +664,7 @@ def load_frameworks():
             return json.load(f)
     return {}
 
-def generate_personalized_messages(ranked_df, frameworks_all, framework_override=None):
+def generate_personalized_messages(ranked_df, framework_override=None, frameworks_all=None):
     import openai
     import pandas as pd
 
@@ -681,19 +681,19 @@ def generate_personalized_messages(ranked_df, frameworks_all, framework_override
         pain = row.get("Pain Point", "")
         industry = row.get("Settore", "custom")
 
-        # ➕ Aggiunta Deep Research se attiva
-        deep = st.session_state.get("deep_research", False)
-        extra_notes = ""
-        if deep and azienda:
-            extra_notes = perform_deep_research(company=azienda, role=ruolo, trigger=trigger)
+        # ➕ Aggiunta Note Deep dal ranking (se presente)
+        extra_notes = row.get("Note Deep", "")
 
-        # 🔄 Se mancanti, prova a completarli con GPT
+        # 🔄 Se alcuni campi mancano, prova a completarli con GPT o dati persona
         if not pain and trigger and ruolo:
             pain = generate_pain_from_trigger(trigger, ruolo)
         if not kpi and trigger and ruolo:
             kpi = generate_kpi_from_trigger(trigger, ruolo)
+        symptom = row.get("Symptom", "")
+        if not symptom and pain and ruolo:
+            symptom = generate_symptom_from_pain(pain, ruolo)
 
-        # 📋 Logging fallback GPT
+        # 📋 Logging fallback GPT se abbiamo riempito campi mancanti
         if not row.get("Pain Point") or not row.get("KPI impattati"):
             log_gpt_fallback(
                 tipo="Completamento GPT",
@@ -705,38 +705,33 @@ def generate_personalized_messages(ranked_df, frameworks_all, framework_override
                 note="Completato perché mancava pain/kpi nella riga"
             )
 
-        # 🔁 Gestione framework override
-        framework_id = row.get("Framework", "")
+        # 🔁 Gestione framework (override o auto da score)
+        framework_id = row.get("Framework suggerito", "")
         if framework_override and framework_override != "Auto (da score)":
             framework_id = framework_override
 
-        selected_fw = frameworks_all.get(framework_id)
+        # Carica frameworks se non già fornito
+        if frameworks_all is None:
+            frameworks_all = load_all_frameworks()
+        selected_fw = frameworks_all.get(framework_id) if frameworks_all else None
         if not selected_fw:
-            # Tentativo fallback da industry
+            # Tentativo fallback in base al settore (se definito)
             fallback_fw = get_default_framework_by_industry(industry)
             if fallback_fw:
                 selected_fw = fallback_fw
                 framework_id = fallback_fw.get("id", "TIPPS")
 
-        if not selected_fw:
-            # Estrema sicurezza: framework minimale
-            structure_text = "TIPPS: Trigger, Issue, Positioning, Proof, Step"
-            framework_name = framework_id
-            description = ""
-        else:
-            structure = selected_fw.get("structure", selected_fw.get("rules", []))
-            structure_text = "\n".join(f"- {s}" for s in structure)
-            framework_name = selected_fw.get("name", framework_id)
-            description = selected_fw.get("description", "")
+        # Estrai nome, descrizione e struttura del framework selezionato
+        framework_name = selected_fw.get("name", "") if selected_fw else ""
+        description = selected_fw.get("description", "") if selected_fw else ""
+        structure_text = "\n".join([f"- {step}" for step in selected_fw.get("structure", selected_fw.get("rules", []))]) if selected_fw else ""
 
-        # ✍️ Prompt
-        prompt = f"""Scrivi un messaggio di sales outbound per LinkedIn o email basato su questo contesto:
+        # ✍️ Costruzione del prompt per GPT
+        symptom_line = f"- Sintomo: {symptom}\n" if symptom else ""
+        prompt = f"""Scrivi un messaggio di sales outbound (email o LinkedIn) basato su questo contesto:
 
 📘 Framework: {framework_name}
 📋 Descrizione: {description}
-
-🧩 Struttura:
-{structure_text}
 
 📎 Contesto:
 - Nome: {nome}
@@ -745,8 +740,7 @@ def generate_personalized_messages(ranked_df, frameworks_all, framework_override
 - Trigger: {trigger}
 - KPI: {kpi}
 - Pain: {pain}
-
-📚 Approfondimenti aggiuntivi:
+{symptom_line}📚 Approfondimenti aggiuntivi:
 {extra_notes}
 
 🎯 Obiettivo: ottenere risposta o apertura.
@@ -756,21 +750,27 @@ def generate_personalized_messages(ranked_df, frameworks_all, framework_override
 ✅ Concludi con una call-to-action soft.
 """
 
+        # 🤖 Chiamata al modello GPT per generare il messaggio
         try:
             completion = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.6,
             )
-            message = completion.choices[0].message.content.strip()
+            message_text = completion.choices[0].message.content.strip()
         except Exception as e:
-            message = f"Errore GPT: {e}"
+            # Usa un suggerimento predefinito come fallback se disponibile
+            message_text = row.get("Suggerimento di messaggio") or f"(GPT fallito) {suggestion}" if 'suggestion' in locals() else f"Errore generazione: {e}"
 
+        # Salva il messaggio generato e il contesto associato
         messages.append({
             "Nome": nome,
             "Azienda": azienda,
             "Ruolo": ruolo,
-            "Messaggio generato": message
+            "Pain Point": pain,
+            "KPI impattati": kpi,
+            "Messaggio generato": message_text,
+            "Note Deep": extra_notes
         })
 
     return pd.DataFrame(messages)
