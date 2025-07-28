@@ -673,26 +673,39 @@ def generate_personalized_messages(ranked_df, framework_override=None, framework
     for _, row in ranked_df.iterrows():
         row = fallback_missing_fields(row.copy())
 
-        nome = row.get("Nome", "")
-        azienda = row.get("Azienda", "")
-        ruolo = row.get("Ruolo", "")
-        trigger = row.get("Trigger combinato", "")
+        name = row.get("Name", row.get("Nome", ""))
+        company = row.get("Company", row.get("Azienda", ""))
+        role = row.get("Role", row.get("Ruolo", ""))
+        triggers = row.get("Trigger combinato", row.get("Trigger", ""))
+        note_deep = row.get("Note Deep", "")
+        framework = framework_override or row.get("Framework suggerito", "TIPPS")
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
         industry = row.get("Settore", "custom")
-        note_deep = row.get("Note Deep", "")
-        framework = framework_override or row.get("Framework suggerito", "TIPPS")
-
+        
         context = f"""Il contatto {name} lavora in {company} come {role}.
-    Trigger rilevati: {triggers}.
-    Insight aggiuntivi da ricerche online:
-    {note_deep}
-    """
+        Trigger rilevati: {triggers}.
+        Insight aggiuntivi da ricerche online:
+        {note_deep}
+        """
+        # Aggiunta sintomo se disponibile
+        symptom = row.get("Symptom", "")
+        if symptom:
+            context += f"\nSintomi osservati: {symptom}"
+
         prompt = f"""Agisci come un SDR esperto.
     Usa il framework {framework} per scrivere un primo messaggio di contatto.
     Contesto:
     {context}
     Scrivi in modo sintetico e d’impatto."""
+
+    # Chiamata GPT vera
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.6,
+    )
+    message = response.choices[0].message.content.strip()
         
         # ➕ Aggiunta Note Deep dal ranking (se presente)
         extra_notes = row.get("Note Deep", "")
