@@ -541,7 +541,7 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
                         triggers.append(p)
         return list(set(triggers))
 
-    # Unisci Excel + PDF + GPT notes in un solo corpus
+    # Unisci testo da PDF e input manuale in un solo corpus per analisi
     combined_texts = []
     if parsed_pdf:
         for content in parsed_pdf.values():
@@ -550,69 +550,92 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
         combined_texts.append(manual_input)
 
     full_context = " ".join(combined_texts).lower()
-
     results = []
 
     for _, row in df.iterrows():
         name = row.get("Name", "N/A")
         company = row.get("Company", "N/A")
         role = row.get("Role", "N/A")
-        try:
-            deep_note = perform_deep_research(company=company, role=role, trigger=trigger_cell)
-        except Exception as e:
-            deep_note = f"Errore ricerca: {e}"
-            
-        # 🧠 Richiama Deep Research (solo se attivo in sessione)
-        deep_active = st.session_state.get("deep_research", False)
-        deep_notes = ""
-        
-        if deep_active and company != "N/A":
-            try:
-                deep_notes = perform_deep_research(company=company, role=role)
-            except Exception as e:
-                deep_notes = f"Errore deep research: {e}"
 
+        # 🧠 Ricerca approfondimenti (Deep Research) se abilitata
+        deep_note = ""
+        if st.session_state.get("deep_research", False) and company != "N/A":
+            try:
+                deep_note = perform_deep_research(company=company, role=role, trigger=row.get("Triggers", ""))
+            except Exception as e:
+                deep_note = f"Errore deep research: {e}"
 
         trigger_cell = row.get("Triggers", "")
         found_triggers = []
 
-        # Analisi Excel triggers
+        # Analisi Excel triggers (separati da virgola o punto e virgola)
         for t in re.split(r",|;", str(trigger_cell)):
             t_clean = t.strip().lower()
             if t_clean:
                 found_triggers.append(t_clean)
 
         # Arricchimento: aggiungi anche i trigger trovati in PDF/AI notes
-        extra_triggers = extract_known_triggers(full_context)
-        all_triggers = list(set(found_triggers + extra_triggers))
+        extra_triggers = extract_known_triggers(full_context) if full_context else []
+        all_triggers = [t.lower() for t in found_triggers + extra_triggers if t]
 
-        # Calcolo score
-        score = len(all_triggers)
-        framework = "TIPPS (generico)"
-        if score >= 4:
-            framework = "TIPPS + COI"
-        elif score == 3:
-            framework = "NEAT (Harris)"
-        elif score == 2:
-            framework = "TIPPS"
-        elif score == 1:
-            framework = "Poke the Bear"
+        # Se non ci sono trigger trovati, utilizza un pain point predefinito (fallback) dal buyer_personas
+        if not all_triggers:
+            industry_data = None
+            if role in buyer_personas:
+                # prova a prendere il settore selezionato oppure il primo disponibile
+                industries = buyer_personas[role].get("industries", {})
+                sel_industry = st.session_state.get("selected_industry")
+                if sel_industry and sel_industry in industries:
+                    industry_data = industries.get(sel_industry, {})
+                else:
+                    # prendi il primo settore disponibile
+                    for ind_data in industries.values():
+                        industry_data = ind_data
+                        break
+            if industry_data:
+                pain_list = industry_data.get("pain", [])
+                if pain_list:
+                    first_pain = pain_list[0]
+                    all_triggers = [first_pain.lower()]
+                    found_triggers = [first_pain.lower()]
+                    trigger_cell = first_pain
+            else:
+                trigger_cell = ""
 
-        # Recupera KPI e suggestion da buyer_personas
+        # Se abbiamo trovato almeno un trigger (o impostato un fallback), calcola lo score e abbina pain/KPI noti
+        score = 0
+        pain_list = []
         kpi_list = []
+        framework = ""
         suggestion = ""
-        for role_key, data in buyer_personas.items():
-            if role_key.lower() == role.lower():
-                for industry_data in data.get("industries", {}).values():
-                    kpi_list += industry_data.get("kpi", [])
-                    if not suggestion:
-                        suggestion = industry_data.get("suggestion", "")
+        if all_triggers:
+            # Calcola punteggio di rilevanza basato sui trigger trovati
+            score = len(all_triggers)
+
+            # Identifica pain e KPI corrispondenti al trigger principale
+            primary_trigger = all_triggers[0]
+            for role_data in buyer_personas.values():
+                for industry_data in role_data.get("industries", {}).values():
+                    for pain_point, kpi_val, sugg, fw in zip(
+                        industry_data.get("pain", []),
+                        industry_data.get("kpi", []),
+                        industry_data.get("suggestion", []),
+                        industry_data.get("framework", []),
+                    ):
+                        if pain_point and primary_trigger and re.search(re.escape(pain_point), primary_trigger, re.IGNORECASE):
+                            pain_list.append(pain_point)
+                            if kpi_val:
+                                kpi_list.append(kpi_val)
+                            if sugg:
+                                suggestion = sugg
+                            if fw:
+                                framework = fw
 
         # Pulisce e rimuove duplicati
-        kpi_list = list(set(kpi_list))
-        kpi_str = ", ".join(kpi_list)
+        pain_str = ", ".join(list(set(pain_list)))
+        kpi_str = ", ".join(list(set(kpi_list)))
 
-        # Costruzione finale
+        # Costruzione finale del record
         results.append({
             "Name": name,
             "Company": company,
@@ -622,7 +645,6 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
             "KPI consigliati": kpi_str,
             "Framework suggerito": framework,
             "Suggerimento di messaggio": suggestion,
-            "Note Deep": deep_notes,
             "Note Deep": deep_note
         })
 
