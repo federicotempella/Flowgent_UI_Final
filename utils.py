@@ -554,7 +554,7 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
     results = []
 
     for _, row in df.iterrows():
-        name = row.get("Name", "Sconosciuto")
+        name = row.get("Name", "N/A")
         company = row.get("Company", "N/A")
         role = row.get("Role", "N/A")
         try:
