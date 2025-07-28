@@ -177,7 +177,12 @@ if output_df is not None:
 
     # ✅ Pulsante salvataggio futuro (da implementare)
     if st.button("💾 Salva tutti in libreria"):
-        st.info("🔧 Funzione in sviluppo. Qui andrà il salvataggio definitivo nella libreria dei messaggi.")
+    success = save_messages_to_library(output_df)
+    if success:
+        st.success("✔️ Tutti i messaggi salvati nella libreria.")
+    else:
+        st.error("❌ Errore durante il salvataggio.")
+
 
 # Step 4: Sequenza multicanale
 with st.expander("🧩 4. Sequenza multicanale completa", expanded=False):
