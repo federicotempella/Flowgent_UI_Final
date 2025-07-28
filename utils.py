@@ -557,6 +557,11 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
         name = row.get("Name", "Sconosciuto")
         company = row.get("Company", "N/A")
         role = row.get("Role", "N/A")
+        try:
+            deep_note = perform_deep_research(company=company, role=role, trigger=trigger_cell)
+        except Exception as e:
+            deep_note = f"Errore ricerca: {e}"
+            
         # 🧠 Richiama Deep Research (solo se attivo in sessione)
         deep_active = st.session_state.get("deep_research", False)
         deep_notes = ""
@@ -617,7 +622,8 @@ def analyze_triggers_and_rank(df, parsed_pdf=None, manual_input=None, buyer_pers
             "KPI consigliati": kpi_str,
             "Framework suggerito": framework,
             "Suggerimento di messaggio": suggestion,
-            "Note Deep": deep_notes
+            "Note Deep": deep_notes,
+            "Note Deep": deep_note
         })
 
     return pd.DataFrame(results)
