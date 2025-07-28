@@ -676,11 +676,24 @@ def generate_personalized_messages(ranked_df, framework_override=None, framework
         nome = row.get("Nome", "")
         azienda = row.get("Azienda", "")
         ruolo = row.get("Ruolo", "")
-        trigger = row.get("Trigger rilevato", "")
+        trigger = row.get("Trigger combinato", "")
         kpi = row.get("KPI impattati", "")
         pain = row.get("Pain Point", "")
         industry = row.get("Settore", "custom")
+        note_deep = row.get("Note Deep", "")
+        framework = framework_override or row.get("Framework suggerito", "TIPPS")
 
+        context = f"""Il contatto {name} lavora in {company} come {role}.
+    Trigger rilevati: {triggers}.
+    Insight aggiuntivi da ricerche online:
+    {note_deep}
+    """
+        prompt = f"""Agisci come un SDR esperto.
+    Usa il framework {framework} per scrivere un primo messaggio di contatto.
+    Contesto:
+    {context}
+    Scrivi in modo sintetico e d’impatto."""
+        
         # ➕ Aggiunta Note Deep dal ranking (se presente)
         extra_notes = row.get("Note Deep", "")
 
