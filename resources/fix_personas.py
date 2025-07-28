@@ -5,17 +5,20 @@ path = "resources/buyer_personas.json"
 
 # Carica file esistente
 with open(path, "r", encoding="utf-8") as f:
-    personas = json.load(f)
+    data = json.load(f)
 
-# Aggiorna se mancano i campi
-for persona in personas:
-    if "symptom" not in persona:
-        persona["symptom"] = []
-    if "damage" not in persona:
-        persona["damage"] = []
+# Correzione campi mancanti in ogni industry
+for ruolo, role_data in data.items():
+    industries = role_data.get("industries", {})
+    for industry, industry_data in industries.items():
+        if "symptom" not in industry_data:
+            industry_data["symptom"] = []
+        if "damage" not in industry_data:
+            industry_data["damage"] = []
 
-# Salva di nuovo
+# Salva il file aggiornato
 with open(path, "w", encoding="utf-8") as f:
-    json.dump(personas, f, indent=2, ensure_ascii=False)
+    json.dump(data, f, indent=2, ensure_ascii=False)
 
-print("✅ File aggiornato con symptom e damage se mancanti.")
+print("✅ File aggiornato correttamente con symptom e damage.")
+
