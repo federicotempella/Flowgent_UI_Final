@@ -104,26 +104,27 @@ with st.expander("🧠 Potenzia l’input manuale"):
 if st.button("📊 Mostra ranking & matrice KPI"):
     df = st.session_state.get("excel_df")
     if df is not None:
-        ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
-        if not ranked_df.empty:
-            if not ranked_df.empty:
-    st.dataframe(ranked_df[[
-        "Name", "Company", "Role", "Trigger combinato", 
-        "Score", "KPI consigliati", "Framework suggerito", 
-        "Note Deep"
-    ]])
-    st.markdown("\n")
-    st.download_button(
-        "📥 Scarica risultati", 
-        data=ranked_df.to_csv(index=False).encode("utf-8"), 
-        file_name="risultati_campagna.csv", 
-        mime="text/csv"
-    )
-
-        else:
-            st.info("Nessun trigger noto trovato.")
+    ranked_df = analyze_triggers_and_rank(df, parsed_pdf, manual_input, buyer_personas)
+    if not ranked_df.empty:
+        st.subheader("🔎 Trigger → KPI → Messaggio suggerito")
+        st.dataframe(ranked_df[[
+            "Name", "Company", "Role", "Trigger combinato", 
+            "Score", "KPI consigliati", "Framework suggerito", 
+            "Note Deep"
+        ]])
+        st.markdown("\n")
+        st.download_button(
+            "📥 Scarica risultati", 
+            data=ranked_df.to_csv(index=False).encode("utf-8"), 
+            file_name="risultati_campagna.csv", 
+            mime="text/csv"
+        )
+        st.session_state["ranked_df"] = ranked_df
+        st.success("✔️ Analisi completata.")
     else:
-        st.warning("Carica prima un file Excel.")
+        st.info("Nessun trigger noto trovato.")
+else:
+    st.warning("Carica prima un file Excel.")
 
 # Step 3: Messaggi personalizzati
 with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
