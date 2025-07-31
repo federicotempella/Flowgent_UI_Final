@@ -50,7 +50,7 @@ def save_message_to_library(
     print(f"✅ Messaggio salvato in {file_path}")
 
 # Funzione per esportare la libreria in formato CSV
-def export_library_to_csv():
+def export_library_to_csv(csv_path="resources/messages_export.csv"):
     """Legge messages_library.json ed esporta i messaggi in resources/messages_export.csv, aggiungendo la data odierna a ogni voce."""
     try:
         with open('resources/messages_library.json', 'r', encoding='utf-8') as f:
@@ -58,12 +58,17 @@ def export_library_to_csv():
     except FileNotFoundError:
         print("Errore: file messages_library.json non trovato.")
         return
-
+        
+    if not data:
+        print("Libreria vuota, nessun dato da esportare.")
+        return
+        
     # Ottenere la data corrente in formato GG/MM/AAAA
     data_oggi = datetime.now().strftime("%d/%m/%Y")
-
+    fieldnames = ["timestamp", "nome", "azienda", "ruolo", "framework", "trigger", "messaggio", "note_deep"]
+    
     # Aprire il file CSV per scrivere i dati
-    with open('resources/messages_export.csv', 'w', encoding='utf-8', newline='') as csvfile:
+    with open(csv_path, 'w', encoding='utf-8', newline='') as csvfile:
         # Se la libreria è vuota, scriviamo solo l'intestazione (oppure nessun output)
         if not data:
             writer = csv.writer(csvfile)
@@ -91,8 +96,8 @@ def export_library_to_csv():
     print(f"✅ Libreria esportata in CSV ({len(data)} messaggi).")
 
 # Funzione per esportare la libreria in formato Word (.docx)
-def export_library_to_word():
-    """Legge messages_library.json ed esporta i messaggi in resources/messages_export.docx, aggiungendo la data odierna a ogni voce."""
+def export_library_to_word(word_path="resources/messages_export.docx"):
+    """Legge messages_library.json ed esporta i messaggi in un file Word, aggiungendo la data odierna a ogni voce."""
     try:
         with open('resources/messages_library.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -103,34 +108,23 @@ def export_library_to_word():
     data_oggi = datetime.now().strftime("%d/%m/%Y")
     doc = Document()
 
-    # Se la libreria è vuota, inseriamo comunque un’intestazione base
     if not data:
         table = doc.add_table(rows=1, cols=2)
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = "Messaggio"
         hdr_cells[1].text = "Data"
-        # (nessun messaggio da aggiungere)
     else:
         if isinstance(data[0], dict):
-            # Prepariamo la tabella con colonne per ogni campo + Data
             fieldnames = list(data[0].keys()) + ["Data"]
-            cols = len(fieldnames)
-            table = doc.add_table(rows=1, cols=cols)
+            table = doc.add_table(rows=1, cols=len(fieldnames))
             hdr_cells = table.rows[0].cells
-            # Intestazioni della tabella
             for j, campo in enumerate(fieldnames):
                 hdr_cells[j].text = str(campo)
-            # Aggiungiamo una riga per ogni messaggio
             for msg in data:
                 row_cells = table.add_row().cells
-                # Scriviamo ogni valore del dizionario nelle colonne corrispondenti
                 for j, campo in enumerate(fieldnames):
-                    if campo == "Data":
-                        row_cells[j].text = data_oggi
-                    else:
-                        row_cells[j].text = str(msg.get(campo, ""))
+                    row_cells[j].text = data_oggi if campo == "Data" else str(msg.get(campo, ""))
         else:
-            # La libreria è una lista di stringhe (un solo campo "Messaggio")
             table = doc.add_table(rows=1, cols=2)
             hdr_cells = table.rows[0].cells
             hdr_cells[0].text = "Messaggio"
@@ -140,8 +134,7 @@ def export_library_to_word():
                 row_cells[0].text = str(msg)
                 row_cells[1].text = data_oggi
 
-    # Salviamo il documento Word
-    doc.save('resources/messages_export.docx')
-    print(f"✅ Libreria esportata in Word ({len(data)} messaggi).")
+    doc.save(word_path)
+    print(f"✅ Libreria esportata in Word ({len(data)} messaggi) → {word_path}")
 
 
