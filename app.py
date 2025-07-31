@@ -508,8 +508,27 @@ elif action == "start_campaign" or nav_choice == "🚀 Avvia una nuova campagna"
 elif nav_choice == "📥 Consulta Report":
     show_reports()
 
-elif nav_choice == "📚 Apri la tua libreria":
+elif selected_label == "📚 Apri la tua libreria":
+    st.subheader("📚 La tua libreria di messaggi salvati")
     show_library()
+
+    st.markdown("#### ⬇️ Esporta i tuoi messaggi salvati")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📄 Esporta in CSV"):
+            try:
+                export_library_to_csv()
+                st.success(f"Libreria esportata in CSV – {datetime.today().strftime('%Y-%m-%d')}")
+            except Exception as e:
+                st.error(f"Errore nell'esportazione CSV: {e}")
+    with col2:
+        if st.button("📝 Esporta in Word"):
+            try:
+                export_library_to_word()
+                st.success(f"Libreria esportata in Word – {datetime.today().strftime('%Y-%m-%d')}")
+            except Exception as e:
+                st.error(f"Errore nell'esportazione Word: {e}")
 
 elif nav_choice == "💬 Lascia un feedback":
     show_feedback_form()
