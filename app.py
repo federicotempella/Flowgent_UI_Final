@@ -517,6 +517,87 @@ elif selected_label == "📚 Apri la tua libreria":
     st.subheader("📚 La tua libreria di messaggi salvati")
     show_library()
 
+    import json
+
+st.markdown("#### 🔍 Filtra i messaggi da esportare")
+
+# 1. Carichiamo la libreria
+try:
+    with open("resources/messages_library.json", "r", encoding="utf-8") as f:
+        all_messages = json.load(f)
+except FileNotFoundError:
+    st.warning("⚠️ Nessun file messages_library.json trovato.")
+    all_messages = []
+
+# 2. Prepariamo i filtri
+df_filter = pd.DataFrame(all_messages)
+
+if not df_filter.empty:
+    # Possibili campi di filtro (puoi aggiungere altri)
+    selected_frameworks = st.multiselect("📐 Filtra per framework", df_filter["framework"].dropna().unique())
+    selected_nomi = st.multiselect("👤 Filtra per nome", df_filter["nome"].dropna().unique())
+    selected_aziende = st.multiselect("🏢 Filtra per azienda", df_filter["azienda"].dropna().unique())
+
+    # 3. Applichiamo i filtri
+    filtered_df = df_filter[
+        (df_filter["framework"].isin(selected_frameworks) if selected_frameworks else True) &
+        (df_filter["nome"].isin(selected_nomi) if selected_nomi else True) &
+        (df_filter["azienda"].isin(selected_aziende) if selected_aziende else True)
+    ]
+
+    st.write(f"🔎 Messaggi selezionati: {len(filtered_df)}")
+
+    from io import BytesIO
+
+# Creiamo nome con data
+today_str = datetime.today().strftime("%Y-%m-%d")
+csv_name = f"messages_filtered_{today_str}.csv"
+word_name = f"messages_filtered_{today_str}.docx"
+
+# CSV esportazione da dataframe selezionato
+if not filtered_df.empty:
+    csv_data = filtered_df.copy()
+    csv_data["Data"] = datetime.today().strftime("%d/%m/%Y")
+    csv_bytes = csv_data.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="📄 Scarica CSV filtrato",
+        data=csv_bytes,
+        file_name=csv_name,
+        mime="text/csv"
+    )
+
+    # Word esportazione dinamica
+    from docx import Document
+
+    doc = Document()
+    doc.add_heading("Messaggi filtrati", level=1)
+
+    fields = list(filtered_df.columns) + ["Data"]
+    table = doc.add_table(rows=1, cols=len(fields))
+    hdr_cells = table.rows[0].cells
+    for j, col in enumerate(fields):
+        hdr_cells[j].text = col
+
+    for _, row in filtered_df.iterrows():
+        row_cells = table.add_row().cells
+        for j, col in enumerate(fields):
+            if col == "Data":
+                row_cells[j].text = datetime.today().strftime("%d/%m/%Y")
+            else:
+                row_cells[j].text = str(row[col]) if col in row else ""
+
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    st.download_button(
+        label="📝 Scarica Word filtrato",
+        data=buffer,
+        file_name=word_name,
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
     st.markdown("#### ⬇️ Esporta i tuoi messaggi salvati")
     today_str = datetime.today().strftime('%Y-%m-%d')
 
