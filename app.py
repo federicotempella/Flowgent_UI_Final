@@ -530,19 +530,32 @@ except FileNotFoundError:
     all_messages = []
 
 # 2. Prepariamo i filtri
-df_filter = pd.DataFrame(all_messages)
+# Convertiamo il campo timestamp in datetime se non lo è
+df_filter["timestamp"] = pd.to_datetime(df_filter["timestamp"], errors="coerce")
+
+min_date = df_filter["timestamp"].min()
+max_date = df_filter["timestamp"].max()
+
+date_range = st.date_input("📅 Filtra per intervallo di data (timestamp)", value=(min_date, max_date))
+
 
 if not df_filter.empty:
     # Possibili campi di filtro (puoi aggiungere altri)
     selected_frameworks = st.multiselect("📐 Filtra per framework", df_filter["framework"].dropna().unique())
     selected_nomi = st.multiselect("👤 Filtra per nome", df_filter["nome"].dropna().unique())
     selected_aziende = st.multiselect("🏢 Filtra per azienda", df_filter["azienda"].dropna().unique())
+    selected_ruoli = st.multiselect("🧑‍💼 Filtra per ruolo", df_filter["ruolo"].dropna().unique())
+    selected_trigger = st.multiselect("🎯 Filtra per trigger", df_filter["trigger"].dropna().unique())
 
     # 3. Applichiamo i filtri
     filtered_df = df_filter[
         (df_filter["framework"].isin(selected_frameworks) if selected_frameworks else True) &
         (df_filter["nome"].isin(selected_nomi) if selected_nomi else True) &
         (df_filter["azienda"].isin(selected_aziende) if selected_aziende else True)
+        (df_filter["ruolo"].isin(selected_ruoli) if selected_ruoli else True)
+        (df_filter["trigger"].isin(selected_triggers) if selected_triggers else True)
+        (df_filter["timestamp"].dt.date >= date_range[0]) &
+        (df_filter["timestamp"].dt.date <= date_range[1])
     ]
 
     st.write(f"🔎 Messaggi selezionati: {len(filtered_df)}")
