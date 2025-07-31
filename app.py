@@ -538,14 +538,76 @@ max_date = df_filter["timestamp"].max()
 
 date_range = st.date_input("📅 Filtra per intervallo di data (timestamp)", value=(min_date, max_date))
 
+# Reset dei filtri – usa session state
+if "reset_filters" not in st.session_state:
+    st.session_state.reset_filters = False
+
+col_reset, col_placeholder = st.columns([1, 5])
+with col_reset:
+    if st.button("🔄 Reimposta filtri"):
+        st.session_state.reset_filters = True
+        st.experimental_rerun()
 
 if not df_filter.empty:
-    # Possibili campi di filtro (puoi aggiungere altri)
-    selected_frameworks = st.multiselect("📐 Filtra per framework", df_filter["framework"].dropna().unique())
-    selected_nomi = st.multiselect("👤 Filtra per nome", df_filter["nome"].dropna().unique())
-    selected_aziende = st.multiselect("🏢 Filtra per azienda", df_filter["azienda"].dropna().unique())
-    selected_ruoli = st.multiselect("🧑‍💼 Filtra per ruolo", df_filter["ruolo"].dropna().unique())
-    selected_trigger = st.multiselect("🎯 Filtra per trigger", df_filter["trigger"].dropna().unique())
+    with st.form("filtro_libreria_form"):
+    st.markdown("#### 🔍 Filtra i messaggi da esportare")
+
+    # Framework
+    framework_options = df_filter["framework"].dropna().unique().tolist()
+    select_all_frameworks = st.checkbox("✅ Seleziona tutti i framework", key="select_all_frameworks")
+    selected_frameworks = st.multiselect(
+        "📐 Filtra per framework",
+        options=framework_options,
+        default=framework_options if select_all_frameworks and not st.session_state.reset_filters else []
+    )
+
+    # Nome
+    nome_options = df_filter["nome"].dropna().unique().tolist()
+    select_all_nomi = st.checkbox("✅ Seleziona tutti i nomi", key="select_all_nomi")
+    selected_nomi = st.multiselect(
+        "👤 Filtra per nome",
+        options=nome_options,
+        default=nome_options if select_all_nomi and not st.session_state.reset_filters else []
+    )
+
+    # Azienda
+    azienda_options = df_filter["azienda"].dropna().unique().tolist()
+    select_all_aziende = st.checkbox("✅ Seleziona tutte le aziende", key="select_all_aziende")
+    selected_aziende = st.multiselect(
+        "🏢 Filtra per azienda",
+        options=azienda_options,
+        default=azienda_options if select_all_aziende and not st.session_state.reset_filters else []
+    )
+
+    # Ruolo
+    ruolo_options = df_filter["ruolo"].dropna().unique().tolist()
+    select_all_ruoli = st.checkbox("✅ Seleziona tutti i ruoli", key="select_all_ruoli")
+    selected_ruoli = st.multiselect(
+        "🧑‍💼 Filtra per ruolo",
+        options=ruolo_options,
+        default=ruolo_options if select_all_ruoli and not st.session_state.reset_filters else []
+    )
+
+    # Trigger
+    trigger_options = df_filter["trigger"].dropna().unique().tolist()
+    select_all_trigger = st.checkbox("✅ Seleziona tutti i trigger", key="select_all_trigger")
+    selected_trigger = st.multiselect(
+        "🎯 Filtra per trigger",
+        options=trigger_options,
+        default=trigger_options if select_all_trigger and not st.session_state.reset_filters else []
+    )
+
+    # Timestamp → Intervallo date
+    df_filter["timestamp"] = pd.to_datetime(df_filter["timestamp"], errors="coerce")
+    min_date = df_filter["timestamp"].min()
+    max_date = df_filter["timestamp"].max()
+    date_range = st.date_input(
+        "📅 Filtra per intervallo di data (timestamp)",
+        value=(min_date, max_date) if st.session_state.reset_filters else (min_date, max_date)
+    )
+
+    # 🔎 PULSANTE FINALE
+    submitted = st.form_submit_button("🔎 Applica filtro avanzato")
 
     # 3. Applichiamo i filtri
     filtered_df = df_filter[
