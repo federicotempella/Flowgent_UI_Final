@@ -508,27 +508,62 @@ elif action == "start_campaign" or nav_choice == "🚀 Avvia una nuova campagna"
 elif nav_choice == "📥 Consulta Report":
     show_reports()
 
+import base64
+
+from datetime import datetime
+import os
+
 elif selected_label == "📚 Apri la tua libreria":
     st.subheader("📚 La tua libreria di messaggi salvati")
     show_library()
 
     st.markdown("#### ⬇️ Esporta i tuoi messaggi salvati")
+    today_str = datetime.today().strftime('%Y-%m-%d')
 
     col1, col2 = st.columns(2)
-    with col1:
-        if st.button("📄 Esporta in CSV"):
-            try:
-                export_library_to_csv()
-                st.success(f"Libreria esportata in CSV – {datetime.today().strftime('%Y-%m-%d')}")
-            except Exception as e:
-                st.error(f"Errore nell'esportazione CSV: {e}")
-    with col2:
-        if st.button("📝 Esporta in Word"):
-            try:
-                export_library_to_word()
-                st.success(f"Libreria esportata in Word – {datetime.today().strftime('%Y-%m-%d')}")
-            except Exception as e:
-                st.error(f"Errore nell'esportazione Word: {e}")
+
+    if col1.button("📄 Esporta in CSV"):
+        try:
+            # Genera filename dinamico
+            csv_path = f"resources/messages_export_{today_str}.csv"
+
+            # Salva il CSV
+            export_library_to_csv(csv_path=csv_path)
+
+            st.success(f"✅ Libreria esportata in CSV: {csv_path}")
+
+            with open(csv_path, "rb") as f:
+                csv_data = f.read()
+
+            st.download_button(
+                label="⬇️ Scarica CSV",
+                data=csv_data,
+                file_name=f"messages_export_{today_str}.csv",
+                mime="text/csv"
+            )
+        except Exception as e:
+            st.error(f"❌ Errore esportazione CSV: {e}")
+
+    if col2.button("📝 Esporta in Word"):
+        try:
+            word_path = f"resources/messages_export_{today_str}.docx"
+
+            export_library_to_word(word_path=word_path)
+
+            st.success(f"✅ Libreria esportata in Word: {word_path}")
+
+            with open(word_path, "rb") as f:
+                word_data = f.read()
+
+            st.download_button(
+                label="⬇️ Scarica Word",
+                data=word_data,
+                file_name=f"messages_export_{today_str}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        except Exception as e:
+            st.error(f"❌ Errore esportazione Word: {e}")
+
 
 elif nav_choice == "💬 Lascia un feedback":
     show_feedback_form()
