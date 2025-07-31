@@ -150,9 +150,6 @@ with st.expander("🧠 3. Genera messaggi personalizzati", expanded=False):
                     data=csv_data,
                     file_name="messaggi_personalizzati.csv",
                     mime="text/csv"
-                # ✅ Esportazione Word
-                self.export_word_button = Button(text="Esporta Word", on_release=self.export_word)
-                layout.add_widget(self.export_word_button)
                 )
 
 # ✅ Visualizzazione e modifica dei messaggi generati
