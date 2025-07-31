@@ -550,7 +550,7 @@ with col_reset:
 
 if not df_filter.empty:
     with st.form("filtro_libreria_form"):
-    st.markdown("#### 🔍 Filtra i messaggi da esportare")
+        st.markdown("#### 🔍 Filtra i messaggi da esportare")
 
     # Framework
     framework_options = df_filter["framework"].dropna().unique().tolist()
@@ -615,12 +615,13 @@ if not df_filter.empty:
         (df_filter["nome"].isin(selected_nomi) if selected_nomi else True) &
         (df_filter["azienda"].isin(selected_aziende) if selected_aziende else True)
         (df_filter["ruolo"].isin(selected_ruoli) if selected_ruoli else True)
-        (df_filter["trigger"].isin(selected_triggers) if selected_triggers else True)
+        (df_filter["trigger"].isin(selected_trigger) if selected_trigger else True)
         (df_filter["timestamp"].dt.date >= date_range[0]) &
         (df_filter["timestamp"].dt.date <= date_range[1])
     ]
 
     st.write(f"🔎 Messaggi selezionati: {len(filtered_df)}")
+    st.session_state["filtered_library"] = filtered_df.copy()
 
     from io import BytesIO
 
