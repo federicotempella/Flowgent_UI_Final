@@ -1,6 +1,9 @@
+# All'inizio di save_message_to_library.py:
 import json
 import os
+import csv
 from datetime import datetime
+from docx import Document 
 
 def save_message_to_library(
     nome,
