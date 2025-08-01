@@ -183,6 +183,32 @@ if output_df is not None:
     else:
         st.error("❌ Errore durante il salvataggio.")
 
+def save_message_to_library_and_refresh(message_dict):
+    import json
+    from datetime import datetime
+    import os
+
+    path = "resources/messages_library.json"
+    if not os.path.exists("resources"):
+        os.makedirs("resources")
+
+    # Aggiungi timestamp al messaggio
+    message_dict["timestamp"] = datetime.now().isoformat()
+
+    # Carica messaggi esistenti o inizializza lista
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+    except FileNotFoundError:
+        existing = []
+
+    existing.append(message_dict)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2, ensure_ascii=False)
+
+    st.success("✅ Messaggio salvato nella libreria")
+    st.session_state["library_updated"] = True   
+
 
 # Step 4: Sequenza multicanale
 with st.expander("🧩 4. Sequenza multicanale completa", expanded=False):
