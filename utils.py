@@ -1070,4 +1070,18 @@ def extract_symptom_and_damage_from_text(text: str) -> tuple[list[str], list[str
 
     return symptoms, damages
 
+def build_prompt(step="3", custom_input=None):
+    persona = st.session_state.get("selected_persona", "")
+    settore = st.session_state.get("selected_sector", "")
+    note_ai = st.session_state.get("ai_context", "")
+
+    base_prompt = f"Stai aiutando a creare messaggi per una campagna nel settore '{settore}' rivolto a '{persona}'."
+    if custom_input:
+        base_prompt += f"\nInformazioni aggiuntive: {custom_input}"
+    if note_ai:
+        base_prompt += f"\nNota AI precedente: {note_ai}"
+    if step == "3":
+        base_prompt += "\nGenera messaggi personalizzati rilevanti in base a questi dati."
+    return base_prompt
+
 
