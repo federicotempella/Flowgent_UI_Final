@@ -209,6 +209,20 @@ def save_message_to_library_and_refresh(message_dict):
     st.success("✅ Messaggio salvato nella libreria")
     st.session_state["library_updated"] = True   
 
+def ai_rank_messages(messages, context_prompt):
+    import openai
+    import os
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    completions = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": context_prompt},
+            {"role": "user", "content": f"Ordina questi messaggi per impatto e rilevanza:\n\n{messages}"}
+        ]
+    )
+    return completions["choices"][0]["message"]["content"]
+
 
 # Step 4: Sequenza multicanale
 with st.expander("🧩 4. Sequenza multicanale completa", expanded=False):
