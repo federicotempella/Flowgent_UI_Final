@@ -65,24 +65,33 @@ if pdfs_mem and st.button("🧐 Elabora PDF ora"):
 
 # Industry & ruolo
 industry = st.selectbox("Scegli il settore", ["automotive", "fashion retail", "CPG", "tier 1 automotive"])
+st.session_state["selected_industry"] = industry
+
 buyer_personas = load_all_buyer_personas()
 roles = list(buyer_personas.keys())
 selected_role = st.selectbox("🌟 Seleziona un ruolo", roles)
+st.session_state["selected_persona"] = selected_role
+
 with st.expander("💬 Chatta con l’AI per arricchire il contesto (facoltativo ma potente)", expanded=False):
     user_prompt = st.text_area("Scrivi qui una domanda, carica contenuti o chiedi aiuto...", key="campaign_chat")
 
     if st.button("✉️ Invia alla chat AI"):
         if user_prompt:
             with st.spinner("💬 Elaborazione in corso…"):
+                from utils import build_prompt
+                prompt = build_prompt(step="2", custom_input=user_prompt)
+
                 response = openai.ChatCompletion.create(
                     model="gpt-4o",
-                    messages=[{"role": "user", "content": user_prompt}],
+                    messages=[{"role": "system", "content": prompt}],
                     temperature=0.6,
                 )
+
                 ai_notes = response.choices[0].message.content
                 st.markdown("**🧠 Risposta AI:**")
                 st.write(ai_notes)
                 st.session_state["ai_notes"] = ai_notes
+                st.session_state["ai_context"] = ai_notes
         else:
             st.warning("Scrivi qualcosa prima di inviare.")
 
